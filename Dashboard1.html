@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wates - Interactive Account Dashboard</title>
+  <link rel="icon" type="image/x-icon" href="https://www.salesforce.com/favicon.ico">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+      :root { color-scheme: light dark; }
+      body { font-family: 'Inter', sans-serif; background-color: #F7FAFC; color: #1F2937; }
+      .dark body, body.dark { background-color: #0B1220; color: #E5E7EB; }
+      .chart-container { position: relative; width: 100%; max-width: 720px; margin-left:auto; margin-right:auto; height: 320px; }
+      .card { background-color: white; border-radius: 0.75rem; box-shadow: 0 4px 10px rgba(0,0,0,.06); }
+      body.dark .card { background-color: #111827; box-shadow: 0 4px 10px rgba(0,0,0,.35); }
+      .kpi { display:flex; flex-direction:column; justify-content:center; align-items:center; padding:1.25rem; }
+      .chip { display:inline-block; padding: .35rem .7rem; border-radius: 999px; font-size:.75rem; border:1px solid rgba(0,0,0,.08); }
+      body.dark .chip { border-color: rgba(255,255,255,.15); }
+      .link-chip { text-decoration:none; }
+      .grid-resp { display:grid; grid-template-columns:1fr; gap:1rem; }
+      @media(min-width:768px){ .grid-resp { grid-template-columns: repeat(3, 1fr); } }
+      .section-title { font-size:1.5rem; font-weight:700; margin-bottom:.5rem; }
+      .subtle { color:#6B7280; }
+      body.dark .subtle { color:#A1A1AA; }
+      .btn { border-radius:999px; padding:.6rem 1rem; font-weight:700; }
+      .btn-ghost { background:transparent; border:1px solid rgba(0,0,0,.1); }
+      body.dark .btn-ghost { border-color: rgba(255,255,255,.15); }
+      .embed { width:100%; min-height:380px; border:0; }
+    </style>
+
+</head>
+<body class="antialiased" id="pageBody">
+
+  <div class="container mx-auto p-4 md:p-8">
+    <header class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-3xl md:text-4xl font-extrabold">CSM Dashboard</h1>
+        <p class="subtle">Interactive overview of health, trends, and key resources.</p>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button id="darkToggle" class="btn btn-ghost">🌗 Theme</button>
+      </div>
+    </header>
+
+    <section class="mb-8">
+      <div class="flex flex-wrap gap-2">
+        <a class="chip link-chip" href="https://salesforce.okta.com/" target="_blank">Okta Dashboard</a>
+        <a class="chip link-chip" href="https://salesforce.okta.com/app/UserHome" target="_blank">Okta User Home</a>
+        <a class="chip link-chip" href="https://sites.google.com/salesforce.com/gard-agentspov/home?pli=1" target="_blank">Agentic POV Site</a>
+        <a class="chip link-chip" href="https://orgcs.lightning.force.com/lightning/r/cssf_Success_Overview__c/aBMHx0000001U5hOAE/view" target="_blank">OrgCS</a>
+        <a class="chip link-chip" href="https://prod-uswest-c.online.tableau.com/#/site/salesforce/views/Product360/CustomerSummary/390fc79d-4729-40e1-92b7-8871bbb85810/Wates?:iid=1" target="_blank">P360 (latest)</a>
+        <a class="chip link-chip" href="https://prod-uswest-c.online.tableau.com/#/site/salesforce/views/CustomerSuccessScorecard-Internal-PROD/Overview/e1e9f9ef-77f8-4316-99fc-f3197b8d27ca/Wates" target="_blank">CSS (latest)</a>
+        <a class="chip link-chip" href="https://orgcs.lightning.force.com/lightning/n/CSM_Workspace" target="_blank">CSM Workspace</a>
+        <a class="chip link-chip" href="https://docs.google.com/presentation/d/placeholder-wates-qbr/preview" target="_blank">Latest QBR Deck</a>
+        <a class="chip link-chip" href="https://drive.google.com/drive/folders/placeholder-wates-resources" target="_blank">Resources Folder</a>
+      </div>
+    </section>
+
+     <section class="mb-10">
+                        <div class="section-title">Account Overview</div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm">
+                          Enhanced CSM Dashboards Overview     <thead>
+                                    <tr class="bg-gray-100 dark:bg-gray-800">
+                                        <th class="px-4 py-2 text-left">Account</th>
+                                        <th class="px-4 py-2 text-left">Renewal Date</th>
+                                        <th class="px-4 py-2 text-left">CSS Score</th>
+                                        <th class="px-4 py-2 text-left">Support Plan</th>
+                                        <th class="px-4 py-2 text-left">Owner</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="card">
+                                        <td class="px-4 py-2 font-bold">Birkenstock</td>
+                                        <td class="px-4 py-2">2026-03-15</td>
+                                        <td class="px-4 py-2">8.1</td>
+                                        <td class="px-4 py-2">Premier</td>
+                                        <td class="px-4 py-2">Nirmal John</td>
+                                    </tr>
+                                    <tr class="card">
+                                        <td class="px-4 py-2 font-bold">CSL Seqirus</td>
+                                        <td class="px-4 py-2">2025-12-01</td>
+                                        <td class="px-4 py-2">7.8</td>
+                                        <td class="px-4 py-2">Premier</td>
+                                        <td class="px-4 py-2">Jane Doe</td>
+                                    </tr>
+                                    <tr class="card">
+                                        <td class="px-4 py-2 font-bold">Gard</td>
+                                        <td class="px-4 py-2">2026-06-30</td>
+                                        <td class="px-4 py-2">8.3</td>
+                                        <td class="px-4 py-2">Standard</td>
+                                        <td class="px-4 py-2">John Smith</td>
+                                    </tr>
+                                    <tr class="card">
+                                        <td class="px-4 py-2 font-bold">Wates</td>
+                                        <td class="px-4 py-2">2025-11-15</td>
+                                        <td class="px-4 py-2">7.5</td>
+                                        <td class="px-4 py-2">Premier</td>
+                                        <td class="px-4 py-2">Emily Clark</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                    <section class="mb-10">
+                        <div class="section-title">Account Metrics Overview</div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <div class="card p-6">
+                                <div class="section-title text-center">CSS Scores</div>
+                                <div class="chart-container" style="height:260px"><canvas id="cssScoresChart"></canvas></div>
+                            </div>
+                            <div class="card p-6">
+                                <div class="section-title text-center">Renewal Timeline</div>
+                                <div class="chart-container" style="height:260px"><canvas id="renewalTimelineChart"></canvas></div>
+                            </div>
+                        </div>
+                    </section>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Enhanced CSM Dashboards - Overview</title>
+    <link rel="icon" type="image/x-icon" href="https://www.salesforce.com/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { color-scheme: light dark; }
+        body { font-family: 'Inter', sans-serif; background-color: #F7FAFC; color: #1F2937; }
+        .dark body, body.dark { background-color: #0B1220; color: #E5E7EB; }
+        .card { background-color: white; border-radius: 0.75rem; box-shadow: 0 4px 10px rgba(0,0,0,.06); }
+        body.dark .card { background-color: #111827; box-shadow: 0 4px 10px rgba(0,0,0,.35); }
+        .chip { display:inline-block; padding: .35rem .7rem; border-radius: 999px; font-size:.75rem; border:1px solid rgba(0,0,0,.08); margin-right: .5rem; margin-bottom: .5rem; }
+        body.dark .chip { border-color: rgba(255,255,255,.15); }
+        .link-chip { text-decoration:none; }
+        .section-title { font-size:1.5rem; font-weight:700; margin-bottom:.5rem; }
+        .subtle { color:#6B7280; }
+        body.dark .subtle { color:#A1A1AA; }
+        .btn { border-radius:999px; padding:.6rem 1rem; font-weight:700; }
+        .btn-ghost { background:transparent; border:1px solid rgba(0,0,0,.1); }
+        body.dark .btn-ghost { border-color: rgba(255,255,255,.15); }
+        .task-done { text-decoration: line-through; color: #6B7280; }
+    </style>
+</head>
+<body class="antialiased" id="pageBody">
+    <div class="w-full min-h-screen px-2 py-4 md:px-6 md:py-8">
+        <header class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-extrabold">Enhanced CSM Dashboards Overview</h1>
+                <p class="subtle">Unified view of all accounts, resources, and tasks.</p>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button id="darkToggle" class="btn btn-ghost">🌗 Theme</button>
+            </div>
+        </header>
+
+
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 w-full">
+            <div>
+                <!-- Quick Links -->
+                <section class="mb-6">
+                    <div class="card p-4">
+                        <div class="section-title">Quick Links</div>
+                        <div class="flex flex-wrap gap-2 mb-2">
+                            <a class="chip link-chip" href="Dashboard_Birkenstock.html">Birkenstock</a>
+                            <a class="chip link-chip" href="Dashboard_CSL_Seqirus.html">CSL Seqirus</a>
+                            <a class="chip link-chip" href="Dashboard_Gard.html">Gard</a>
+                            <a class="chip link-chip" href="Dashboard_Wates.html">Wates</a>
+                        </div>
+                    </div>
+                </section>
+                <!-- Account Overview -->
+                <section class="mb-6">
+                    <div class="card p-4">
+                        <div class="section-title">Account Overview</div>
+                        <div class="overflow-x-auto w-full">
+                            <table class="min-w-full text-sm">
+                                <thead>
+                                    <tr class="bg-gray-100 dark:bg-gray-800">
+                                        <th class="px-4 py-2 text-left">Account</th>
+                                        <th class="px-4 py-2 text-left">Renewal Date</th>
+                                        <th class="px-4 py-2 text-left">CSS Score</th>
+                                        <th class="px-4 py-2 text-left">Support Plan</th>
+                                        <th class="px-4 py-2 text-left">Owner</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="account-row cursor-pointer" data-account="Birkenstock">
+                                        <td class="px-4 py-2 font-bold">Birkenstock</td>
+                                        <td class="px-4 py-2">2026-03-15</td>
+                                        <td class="px-4 py-2">8.1</td>
+                                        <td class="px-4 py-2">Premier</td>
+                                        <td class="px-4 py-2">Nirmal John</td>
+                                    </tr>
+                                    <tr class="account-row cursor-pointer" data-account="CSL Seqirus">
+                                        <td class="px-4 py-2 font-bold">CSL Seqirus</td>
+                                        <td class="px-4 py-2">2025-12-01</td>
+                                        <td class="px-4 py-2">7.8</td>
+                                        <td class="px-4 py-2">Premier</td>
+                                        <td class="px-4 py-2">Jane Doe</td>
+                                    </tr>
+                                    <tr class="account-row cursor-pointer" data-account="Gard">
+                                        <td class="px-4 py-2 font-bold">Gard</td>
+                                        <td class="px-4 py-2">2026-06-30</td>
+                                        <td class="px-4 py-2">8.3</td>
+                                        <td class="px-4 py-2">Standard</td>
+                                        <td class="px-4 py-2">John Smith</td>
+                                    </tr>
+                                    <tr class="account-row cursor-pointer" data-account="Wates">
+                                        <td class="px-4 py-2 font-bold">Wates</td>
+                                        <td class="px-4 py-2">2025-11-15</td>
+                                        <td class="px-4 py-2">7.5</td>
+                                        <td class="px-4 py-2">Premier</td>
+                                        <td class="px-4 py-2">Emily Clark</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+                <!-- Recent Activity -->
+                <section class="mb-6">
+                    <div class="card p-4">
+                        <div class="section-title">Recent Activity</div>
+                        <div id="activityFeed" class="grid grid-cols-1 gap-4"></div>
+                    </div>
+                </section>
+                <!-- Task Tracker -->
+                <section class="mb-6">
+                    <div class="card p-4">
+                        <div class="section-title">Task Tracker</div>
+                        <ul id="taskList" class="space-y-2">
+                            <li><input type="checkbox" class="mr-2"/> <span>Prepare QBR deck for Birkenstock</span> <span class="subtle ml-2">Due: 2025-09-15</span> <span class="chip ml-2">High</span> <span class="chip ml-2">Nirmal</span></li>
+                            <li><input type="checkbox" class="mr-2"/> <span>Review CSS report for CSL Seqirus</span> <span class="subtle ml-2">Due: 2025-09-20</span> <span class="chip ml-2">Medium</span> <span class="chip ml-2">Jane</span></li>
+                            <li><input type="checkbox" class="mr-2"/> <span>Update API landscape for Gard</span> <span class="subtle ml-2">Due: 2025-09-25</span> <span class="chip ml-2">Low</span> <span class="chip ml-2">John</span></li>
+                            <li><input type="checkbox" class="mr-2"/> <span>Schedule renewal call for Wates</span> <span class="subtle ml-2">Due: 2025-09-18</span> <span class="chip ml-2">High</span> <span class="chip ml-2">Emily</span></li>
+                        </ul>
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            <input id="newTask" type="text" class="border rounded px-2 py-1 mr-2" placeholder="Task..."/>
+                            <input id="newDue" type="date" class="border rounded px-2 py-1 mr-2"/>
+                            <select id="newPriority" class="border rounded px-2 py-1 mr-2">
+                                <option>High</option><option>Medium</option><option>Low</option>
+                            </select>
+                            <input id="newAssignee" type="text" class="border rounded px-2 py-1 mr-2" placeholder="Assignee"/>
+                            <button id="addTask" class="btn btn-ghost">Add Task</button>
+                        </div>
+                        <div class="mt-4">
+                            <button id="exportTasks" class="btn btn-ghost">Export Tasks (CSV)</button>
+                            <button id="printOverview" class="btn btn-ghost">Print Overview</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <div>
+                <!-- Summary Charts -->
+                <section class="mb-6">
+                    <div class="card p-4">
+                        <div class="section-title">Summary Charts</div>
+                        <div class="grid grid-cols-1 gap-6">
+                            <div class="mb-6">
+                                <div class="section-title text-center">CSS Scores</div>
+                                <div class="chart-container" style="height:220px"><canvas id="cssScoresChart"></canvas></div>
+                            </div>
+                            <div class="mb-6">
+                                <div class="section-title text-center">Renewal Timeline</div>
+                                <div class="chart-container" style="height:220px"><canvas id="renewalTimelineChart"></canvas></div>
+                            </div>
+                            <div class="mb-6">
+                                <div class="section-title text-center">Support Plan Distribution</div>
+                                <div class="chart-container" style="height:220px"><canvas id="supportPlanChart"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- AI Shortcuts -->
+                <section class="mb-6">
+                    <div class="card p-4">
+                        <div class="section-title">AI Shortcuts</div>
+                        <ul class="list-disc pl-5 space-y-2">
+                            <li><strong>Portfolio Pulse:</strong> “Summarize CSS and vCore deltas for all accounts from the last two P360 and CSS reports. Flag any declines & propose next steps.”</li>
+                            <li><strong>QBR Prep:</strong> “Create a 5-slide exec brief for each account covering CSS trend, vCore usage, API landscape, and top 3 risks/opportunities.”</li>
+                            <li><strong>Agentic POV:</strong> “From reports, meetings, and slides, list top automation/API opportunities for each account with estimated impact and owners.”</li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Login Modal -->
+        <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+            <div class="bg-white dark:bg-gray-900 rounded-lg p-8 shadow-lg w-full max-w-sm">
+                <h2 class="text-xl font-bold mb-4">Login</h2>
+                <input id="loginName" type="text" class="border rounded px-2 py-1 w-full mb-4" placeholder="Your Name"/>
+                <button id="loginBtn" class="btn btn-ghost w-full">Login</button>
+            </div>
+        </div>
+
+        <section class="mb-12">
+            <div class="section-title">Task Tracker</div>
+            <div class="card p-4">
+                <ul id="taskList" class="space-y-2">
+                    <li><input type="checkbox" class="mr-2"/> Prepare QBR deck for Birkenstock</li>
+                    <li><input type="checkbox" class="mr-2"/> Review CSS report for CSL Seqirus</li>
+                    <li><input type="checkbox" class="mr-2"/> Update API landscape for Gard</li>
+                    <li><input type="checkbox" class="mr-2"/> Schedule renewal call for Wates</li>
+                </ul>
+                <div class="mt-4">
+                    <input id="newTask" type="text" class="border rounded px-2 py-1 mr-2" placeholder="Add new task..."/>
+                    <button id="addTask" class="btn btn-ghost">Add Task</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-12">
+            <div class="section-title">AI Shortcuts</div>
+            <div class="card p-4">
+                <ul class="list-disc pl-5 space-y-2">
+                    <li><strong>Portfolio Pulse:</strong> “Summarize CSS and vCore deltas for all accounts from the last two P360 and CSS reports. Flag any declines & propose next steps.”</li>
+                    <li><strong>QBR Prep:</strong> “Create a 5-slide exec brief for each account covering CSS trend, vCore usage, API landscape, and top 3 risks/opportunities.”</li>
+                    <li><strong>Agentic POV:</strong> “From reports, meetings, and slides, list top automation/API opportunities for each account with estimated impact and owners.”</li>
+                </ul>
+            </div>
+        </section>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const body = document.getElementById('pageBody');
+        document.getElementById('darkToggle').addEventListener('click', () => body.classList.toggle('dark'));
+
+        // Login modal logic
+        function showLogin() { document.getElementById('loginModal').classList.remove('hidden'); }
+        function hideLogin() { document.getElementById('loginModal').classList.add('hidden'); }
+        document.getElementById('loginBtn').onclick = function() {
+            const name = document.getElementById('loginName').value.trim();
+            if(name) {
+                localStorage.setItem('dashboardUser', name);
+                hideLogin();
+                document.querySelector('h1').textContent = `Enhanced CSM Dashboards Overview — ${name}`;
+            }
+        };
+        if(!localStorage.getItem('dashboardUser')) showLogin();
+
+        // Account row popup logic
+        const accountDetails = {
+            'Birkenstock': { links: ['OrgCS','P360','CSS','CSM Workspace'], notes: 'Premier support, renewal 2026-03-15.' },
+            'CSL Seqirus': { links: ['OrgCS','P360','CSS'], notes: 'Premier support, renewal 2025-12-01.' },
+            'Gard': { links: ['OrgCS','P360'], notes: 'Standard support, renewal 2026-06-30.' },
+            'Wates': { links: ['OrgCS','P360'], notes: 'Premier support, renewal 2025-11-15.' }
+        };
+        document.querySelectorAll('.account-row').forEach(row => {
+            row.addEventListener('click', function() {
+                const acc = row.dataset.account;
+                alert(`${acc} Details:\n${accountDetails[acc].notes}\nLinks: ${accountDetails[acc].links.join(', ')}`);
+            });
+        });
+
+        // Recent activity feed
+        const activities = [
+            { account: 'Birkenstock', date: '2025-09-03', title: 'Quarterly Review', note: 'Expansion opportunities validated; API ROI demo planned.' },
+            { account: 'CSL Seqirus', date: '2025-08-19', title: 'Sandbox Cleanup', note: 'Retired deprecated runtimes; reduced noise.' },
+            { account: 'Gard', date: '2025-08-05', title: 'Stakeholder Map', note: 'Aligned AE, CSM, Architect on plan.' },
+            { account: 'Wates', date: '2025-09-01', title: 'Renewal Call Scheduled', note: 'Renewal call set for 2025-09-18.' }
+        ];
+        const feed = document.getElementById('activityFeed');
+        activities.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'card p-4';
+            div.innerHTML = `<div class='text-blue-500 text-sm'>${item.date} — ${item.account}</div><div class='font-bold text-lg'>${item.title}</div><div class='subtle'>${item.note}</div>`;
+            feed.appendChild(div);
+        });
+
+        // Task tracker logic with due dates, priorities, assignees
+        document.querySelectorAll('#taskList input[type="checkbox"]').forEach(cb => {
+            cb.addEventListener('change', function() {
+                if(cb.checked) cb.parentElement.classList.add('task-done');
+                else cb.parentElement.classList.remove('task-done');
+            });
+        });
+        document.getElementById('addTask').addEventListener('click', function() {
+            const val = document.getElementById('newTask').value.trim();
+            const due = document.getElementById('newDue').value;
+            const priority = document.getElementById('newPriority').value;
+            const assignee = document.getElementById('newAssignee').value.trim();
+            if(val) {
+                const li = document.createElement('li');
+                li.innerHTML = `<input type='checkbox' class='mr-2'/> <span>${val}</span> <span class='subtle ml-2'>Due: ${due}</span> <span class='chip ml-2'>${priority}</span> <span class='chip ml-2'>${assignee}</span>`;
+                document.getElementById('taskList').appendChild(li);
+                li.querySelector('input').addEventListener('change', function() {
+                    if(this.checked) li.classList.add('task-done');
+                    else li.classList.remove('task-done');
+                });
+                document.getElementById('newTask').value = '';
+                document.getElementById('newDue').value = '';
+                document.getElementById('newAssignee').value = '';
+            }
+        });
+
+        // Export tasks as CSV
+        document.getElementById('exportTasks').onclick = function() {
+            let csv = 'Task,Due Date,Priority,Assignee\n';
+            document.querySelectorAll('#taskList li').forEach(li => {
+                const spans = li.querySelectorAll('span');
+                csv += `${spans[0].textContent},${spans[1].textContent.replace('Due: ','')},${spans[2].textContent},${spans[3].textContent}\n`;
+            });
+            const blob = new Blob([csv], {type: 'text/csv'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'tasks.csv';
+            a.click();
+        };
+        // Print overview
+        document.getElementById('printOverview').onclick = function() { window.print(); };
+
+        // Chart.js summary charts
+        const cssScoresCtx = document.getElementById('cssScoresChart').getContext('2d');
+        new Chart(cssScoresCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Birkenstock', 'CSL Seqirus', 'Gard', 'Wates'],
+                datasets: [{
+                    label: 'CSS Score',
+                    data: [8.1, 7.8, 8.3, 7.5],
+                    backgroundColor: ['#3B82F6','#10B981','#6366F1','#F59E0B']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, max: 10 } }
+            }
+        });
+
+        const renewalTimelineCtx = document.getElementById('renewalTimelineChart').getContext('2d');
+        function daysUntil(dateStr){
+            const target = new Date(dateStr);
+            const now = new Date();
+            const diff = Math.ceil((target - now)/(1000*60*60*24));
+            return Math.max(diff, 0);
+        }
+        new Chart(renewalTimelineCtx, {
+            type: 'line',
+            data: {
+                labels: ['Birkenstock', 'CSL Seqirus', 'Gard', 'Wates'],
+                datasets: [{
+                    label: 'Days Until Renewal',
+                    data: [
+                        daysUntil('2026-03-15'),
+                        daysUntil('2025-12-01'),
+                        daysUntil('2026-06-30'),
+                        daysUntil('2025-11-15')
+                    ],
+                    borderColor: '#6366F1',
+                    backgroundColor: 'rgba(99,102,241,.1)',
+                    fill: true,
+                    tension: .2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        // Support Plan Distribution chart
+        const supportPlanCtx = document.getElementById('supportPlanChart').getContext('2d');
+        new Chart(supportPlanCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Premier', 'Standard'],
+                datasets: [{
+                    label: 'Support Plan',
+                    data: [3, 1],
+                    backgroundColor: ['#10B981','#6366F1']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+  </script>
+</body>
+</html>

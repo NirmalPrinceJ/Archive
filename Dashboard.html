@@ -1,0 +1,1407 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Enhanced CSM Dashboards - Overview</title>
+    <link rel="icon" type="image/x-icon" href="https://www.salesforce.com/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { color-scheme: light dark; }
+        body { font-family: 'Inter', sans-serif; background-color: #F7FAFC; color: #1F2937; }
+        .dark body, body.dark { background-color: #0B1220; color: #E5E7EB; }
+        .card { background-color: white; border-radius: 0.75rem; box-shadow: 0 4px 10px rgba(0,0,0,.06); }
+        body.dark .card { background-color: #111827; box-shadow: 0 4px 10px rgba(0,0,0,.35); }
+        .chip { display:inline-block; padding: .35rem .7rem; border-radius: 999px; font-size:.75rem; border:1px solid rgba(0,0,0,.08); margin-right: .5rem; margin-bottom: .5rem; }
+        body.dark .chip { border-color: rgba(255,255,255,.15); }
+        .link-chip { text-decoration:none; }
+        .section-title { font-size:1.5rem; font-weight:700; margin-bottom:.5rem; }
+        .subtle { color:#6B7280; }
+        body.dark .subtle { color:#A1A1AA; }
+        .btn { border-radius:999px; padding:.6rem 1rem; font-weight:700; }
+        .btn-ghost { background:transparent; border:1px solid rgba(0,0,0,.1); }
+        body.dark .btn-ghost { border-color: rgba(255,255,255,.15); }
+        .task-done { text-decoration: line-through; color: #6B7280; }
+        /* Dark mode for sheets controls */
+        body.dark #btnLoadFromSheets, 
+        body.dark #btnSaveToSheets {
+            background-color: #1F2937;
+            border-color: rgba(255,255,255,.15);
+            color: #E5E7EB;
+        }
+        body.dark #btnLoadFromSheets:hover, 
+        body.dark #btnSaveToSheets:hover {
+            background-color: #374151;
+        }
+    </style>
+</head>
+<body class="antialiased" id="pageBody">
+    <div class="w-full min-h-screen px-2 py-4 md:px-6 md:py-8">
+        <header class="flex items-center justify-between mb-8 relative">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-extrabold">Enhanced CSM Dashboards Overview</h1>
+                <p class="subtle">Unified view of all accounts, resources, and tasks.</p>
+            </div>
+            <div class="flex items-center space-x-2">
+                <div class="relative">
+                  <button id="btnIntegrationsMenu" class="btn btn-ghost">🔌 Integrations</button>
+                  <div id="integrationsDropdown" class="hidden absolute right-0 mt-2 w-56 rounded-lg border bg-white shadow-lg z-20 dark:bg-gray-900 dark:border-gray-700">
+                    <button id="openSlack" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Slack</button>
+                    <button id="openEmail" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Email</button>
+                    <button id="openSlides" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Google Slides</button>
+                    <div class="border-t my-1 dark:border-gray-700"></div>
+                    <button id="openSheets" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Google Sheets</button>
+                    <button id="openExcel" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Excel</button>
+                    <button id="openDrive" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Google Drive</button>
+                  </div>
+                </div>
+                <button id="darkToggle" class="btn btn-ghost">🌗 Theme</button>
+            </div>
+        </header>
+
+        <!-- Controls moved into Integrations modals -->
+
+        <!-- Integrations Modals -->
+        <div id="modalOverlay" class="hidden fixed inset-0 bg-black bg-opacity-40 z-30"></div>
+        <!-- Slack Modal -->
+        <div id="modalSlack" class="hidden fixed inset-0 z-40 flex items-center justify-center">
+          <div class="bg-white dark:bg-gray-900 rounded-lg p-6 w-full max-w-lg shadow-xl">
+            <div class="flex items-center justify-between mb-3">
+              <div class="font-bold text-lg">Slack</div>
+              <button data-close="modalSlack" class="btn btn-ghost">✖︎</button>
+            </div>
+            <div class="space-y-2">
+              <input id="slackChannel" type="text" class="border rounded px-2 py-2 w-full" placeholder="#channel or channel-id"/>
+              <textarea id="slackMessage" class="border rounded px-2 py-2 w-full" placeholder="Message to send"></textarea>
+              <div class="flex gap-2">
+                <button id="btnSlackSend" class="px-3 py-2 rounded-lg border bg-white hover:bg-gray-50">Send to Slack</button>
+                <button id="btnSlackDailyDigest" class="px-3 py-2 rounded-lg border bg-white hover:bg-gray-50">Send Daily Digest</button>
+              </div>
+              <div id="slackStatus" class="text-sm text-gray-500"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Sheets Modal -->
+        <div id="modalSheets" class="hidden fixed inset-0 z-40 flex items-center justify-center">
+          <div class="bg-white dark:bg-gray-900 rounded-lg p-6 w-full max-w-xl shadow-xl">
+            <div class="flex items-center justify-between mb-3">
+              <div class="font-bold text-lg">Google Sheets</div>
+              <button data-close="modalSheets" class="btn btn-ghost">✖︎</button>
+            </div>
+            <div class="space-y-3">
+              <div>
+                <label class="text-sm subtle">Apps Script Web App URL</label>
+                <input id="sheetsWebAppUrl" type="url" class="border rounded px-2 py-2 w-full" placeholder="https://script.google.com/macros/s/.../exec"/>
+              </div>
+              <div>
+                <label class="text-sm subtle">Sheet Embed URL</label>
+                <input id="sheetsEmbedUrl" type="url" class="border rounded px-2 py-2 w-full" placeholder="https://docs.google.com/spreadsheets/d/.../edit"/>
+              </div>
+              <div class="flex gap-2">
+                <button id="btnSaveSheetsConfig" class="px-3 py-2 rounded-lg border bg-white hover:bg-gray-50">💾 Save Config</button>
+                <button id="btnLoadFromSheets" class="px-3 py-2 rounded-lg border bg-white hover:bg-gray-50">🔄 Refresh Data</button>
+                <button id="btnSaveToSheets" class="px-3 py-2 rounded-lg border bg-white hover:bg-gray-50">⬆️ Export</button>
+              </div>
+              <div class="flex gap-2">
+                <button id="btnToggleSheet" class="px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">📄 Show Embedded Sheet</button>
+                <button id="btnBootstrapSheet" class="px-3 py-2 rounded-lg border bg-white hover:bg-gray-50">🧰 Bootstrap Sheet</button>
+              </div>
+              <div id="sheetsStatus" class="text-sm text-gray-500"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Excel Modal -->
+        <div id="modalExcel" class="hidden fixed inset-0 z-40 flex items-center justify-center">
+          <div class="bg-white dark:bg-gray-900 rounded-lg p-6 w-full max-w-xl shadow-xl">
+            <div class="flex items-center justify-between mb-3">
+              <div class="font-bold text-lg">Excel</div>
+              <button data-close="modalExcel" class="btn btn-ghost">✖︎</button>
+            </div>
+            <div class="space-y-3">
+              <div class="flex gap-2 flex-wrap">
+                <button id="btnImportExcel" class="px-3 py-2 rounded-lg border bg-white hover:bg-gray-50">⬇️ Import from Excel</button>
+                <button id="btnExportExcel" class="px-3 py-2 rounded-lg border bg-white hover:bg-gray-50">⬆️ Export to Excel</button>
+                <button id="btnToggleExcel" class="px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">📊 Show Embedded Excel</button>
+              </div>
+              <div>
+                <label class="text-sm subtle">Excel Online Embed URL</label>
+                <div class="flex gap-2">
+                  <input id="excelEmbedUrl" type="url" class="border rounded px-2 py-2 w-full" placeholder="Paste Excel Online embed URL" />
+                  <button id="btnSaveExcelUrl" class="px-3 py-2 rounded-lg border bg-white hover:bg-gray-50">💾 Save</button>
+                </div>
+              </div>
+              <input id="fileExcel" type="file" accept=".xlsx,.xls" class="hidden" />
+              <div id="excelStatus" class="text-sm text-gray-500"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Drive Modal -->
+        <div id="modalDrive" class="hidden fixed inset-0 z-40 flex items-center justify-center">
+          <div class="bg-white dark:bg-gray-900 rounded-lg p-6 w-full max-w-xl shadow-xl">
+            <div class="flex items-center justify-between mb-3">
+              <div class="font-bold text-lg">Google Drive</div>
+              <button data-close="modalDrive" class="btn btn-ghost">✖︎</button>
+            </div>
+            <div class="space-y-3">
+              <div>
+                <label class="text-sm subtle">Default Drive Folder ID</label>
+                <div class="flex gap-2">
+                  <input id="driveFolderId" type="text" class="border rounded px-2 py-2 w-full" placeholder="Drive Folder ID" />
+                  <button id="btnSaveDriveFolder" class="px-3 py-2 rounded-lg border bg-white hover:bg-gray-50">💾 Save</button>
+                </div>
+              </div>
+              <div class="border-t pt-3 dark:border-gray-700">
+                <div class="font-semibold mb-2">Browse Folders</div>
+                <div class="flex items-center gap-2 mb-2">
+                  <button id="btnDriveRoot" class="px-2 py-1 rounded border">🏠 My Drive</button>
+                  <button id="btnDriveUp" class="px-2 py-1 rounded border">⬆️ Up</button>
+                  <input id="driveSearch" type="text" class="border rounded px-2 py-1 flex-1" placeholder="Search in folder" />
+                  <button id="btnDriveSearch" class="px-2 py-1 rounded border">Search</button>
+                </div>
+                <div id="driveBreadcrumbs" class="text-sm subtle mb-2"></div>
+                <div id="driveFolderList" class="max-h-64 overflow-auto border rounded p-2"></div>
+                <div class="flex justify-end mt-2">
+                  <button id="btnChooseDriveFolder" class="px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Choose This Folder</button>
+                </div>
+              </div>
+              <div class="flex gap-2 flex-wrap">
+                <button id="btnUploadExcelDrive" class="px-3 py-2 rounded-lg border bg-white hover:bg-gray-50">☁️ Upload Excel</button>
+                <button id="btnUploadJsonDrive" class="px-3 py-2 rounded-lg border bg-white hover:bg-gray-50">☁️ Upload JSON</button>
+              </div>
+              <div id="driveStatus" class="text-sm text-gray-500"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Email Modal -->
+        <div id="modalEmail" class="hidden fixed inset-0 z-40 flex items-center justify-center">
+          <div class="bg-white dark:bg-gray-900 rounded-lg p-6 w-full max-w-lg shadow-xl">
+            <div class="flex items-center justify-between mb-3">
+              <div class="font-bold text-lg">Email</div>
+              <button data-close="modalEmail" class="btn btn-ghost">✖︎</button>
+            </div>
+            <div class="space-y-2">
+              <input id="emailTo" type="email" class="border rounded px-2 py-2 w-full" placeholder="to@example.com"/>
+              <input id="emailSubject" type="text" class="border rounded px-2 py-2 w-full" placeholder="Subject"/>
+              <textarea id="emailHtml" class="border rounded px-2 py-2 w-full" placeholder="HTML body"></textarea>
+              <div class="flex gap-2">
+                <button id="btnEmailSend" class="px-3 py-2 rounded-lg border bg-white hover:bg-gray-50">Send Email</button>
+                <button id="btnEmailDailyDigest" class="px-3 py-2 rounded-lg border bg-white hover:bg-gray-50">Email Daily Digest</button>
+              </div>
+              <div id="emailStatus" class="text-sm text-gray-500"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Slides Modal -->
+        <div id="modalSlides" class="hidden fixed inset-0 z-40 flex items-center justify-center">
+          <div class="bg-white dark:bg-gray-900 rounded-lg p-6 w-full max-w-lg shadow-xl">
+            <div class="flex items-center justify-between mb-3">
+              <div class="font-bold text-lg">Google Slides</div>
+              <button data-close="modalSlides" class="btn btn-ghost">✖︎</button>
+            </div>
+            <div class="space-y-2">
+              <input id="slidesTemplateId" type="text" class="border rounded px-2 py-2 w-full" placeholder="Template Presentation ID (optional)"/>
+              <div class="flex gap-2 items-center">
+                <button id="btnSlidesExport" class="px-3 py-2 rounded-lg border bg-white hover:bg-gray-50">Create Deck from Data</button>
+              </div>
+              <div class="flex gap-2 items-center">
+                <input id="slidesImportId" type="text" class="border rounded px-2 py-2 flex-1" placeholder="Presentation ID to import"/>
+                <button id="btnSlidesImport" class="px-3 py-2 rounded-lg border bg-white hover:bg-gray-50">Import Accounts</button>
+              </div>
+              <div id="slidesStatus" class="text-sm text-gray-500"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Collapsible embedded Google Sheet -->
+        <div id="sheetEmbedWrap" class="hidden rounded-xl border overflow-hidden">
+            <iframe id="sheetFrame" src="" width="100%" height="480" style="border:0;"></iframe>
+        </div>
+
+        <!-- Collapsible embedded Excel (OneDrive/SharePoint) -->
+        <div id="excelEmbedWrap" class="hidden rounded-xl border overflow-hidden mt-3">
+            <iframe id="excelFrame" src="" width="100%" height="480" style="border:0;"></iframe>
+        </div>
+
+
+    <div class="flex flex-col gap-8 w-full">
+        <!-- All sections now stack vertically and use full width -->
+                <!-- Quick Links -->
+         <div class="flex flex-wrap gap-2">
+        <a class="chip link-chip" href="https://salesforce.okta.com/app/UserHome" target="_blank">Okta User Home</a>
+        <a class="chip link-chip" href="https://sites.google.com/salesforce.com/gard-agentspov/home?pli=1" target="_blank">Agentic POV Site</a>
+        <a class="chip link-chip" href="https://salesforce.okta.com/home/salesforce_other/0oa1moszykHIgxlUY1t7/46" target="_blank">OrgCS</a>
+        <a class="chip link-chip" href="https://salesforce.okta.com/home/salesforce/0oa1kq6wmfnYAGRKW1t7/46?fromHome=true" target="_blank">P360 (latest)</a>
+        <a class="chip link-chip" href="https://salesforce.okta.com/home/salesforce/0oa1kq6wmfnYAGRKW1t7/46?fromHome=true" target="_blank">CSS (latest)</a>
+        <a class="chip link-chip" href="https://orgcs.lightning.force.com/lightning/n/CSM_Workspace" target="_blank">CSM Workspace</a>
+                                                        <a class="chip link-chip" href="Dashboard_CSL_Seqirus.html">CSL Seqirus</a>
+                                                        <a class="chip link-chip" href="Dashboard_Gard.html">Gard</a>
+                                                        <a class="chip link-chip" href="Dashboard_Wates.html">Wates</a>
+                                                         <a class="chip link-chip" href="Dashboard_Birkenstock.html">Birkenstock</a>
+    </div>
+                <!-- Account Overview -->
+
+                                        <!-- Account Overview -->
+                                            <section id="tableRoot" class="mb-6">
+                                                <div class="card p-4">
+                                                    <div class="section-title flex items-center justify-between">
+                                                        <span>Account Overview</span>
+                                                        <div class="flex gap-2 items-center">
+                                                            <span class="chip filter-chip" data-filter="all">All</span>
+                                                            <span class="chip filter-chip" data-filter="green">Green</span>
+                                                            <span class="chip filter-chip" data-filter="amber">Amber</span>
+                                                            <span class="chip filter-chip" data-filter="red">Red</span>
+                                                            <input id="searchInput" type="text" class="border rounded px-2 py-1 ml-2" placeholder="Search accounts..." />
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-2 flex justify-end">
+                                                        <button id="toggleChartsBtn" class="btn btn-ghost">📊 Show Charts</button>
+                                                    </div>
+                                                    <div class="overflow-x-auto w-full">
+                                                        <table id="accountsTable" class="min-w-full text-sm">
+                                                            <thead>
+                                                                <tr class="bg-gray-100 dark:bg-gray-800">
+                                                                    <th class="px-4 py-2 text-left cursor-pointer" data-key="account">Account</th>
+                                                                    <th class="px-4 py-2 text-left cursor-pointer" data-key="adoption">Adoption %</th>
+                                                                    <th class="px-4 py-2 text-left cursor-pointer" data-key="css">CSS Score</th>
+                                                                    <th class="px-4 py-2 text-left cursor-pointer" data-key="expertise">Technical Expertise</th>
+                                                                    <th class="px-4 py-2 text-left cursor-pointer" data-key="vcoresProd">vCores Prod</th>
+                                                                    <th class="px-4 py-2 text-left cursor-pointer" data-key="vcoresPre">vCores Pre-Prod</th>
+                                                                    <th class="px-4 py-2 text-left cursor-pointer" data-key="envs">Environments</th>
+                                                                    <th class="px-4 py-2 text-left cursor-pointer" data-key="renewal">Renewal Date</th>
+                                                                    <th class="px-4 py-2 text-left cursor-pointer" data-key="risk">Renewal Risk</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody id="accountsTbody">
+                                                                <!-- Table rows rendered by JS -->
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </section>
+                                            <section id="chartsRoot" class="mb-6 hidden">
+                                                <div class="card p-4">
+                                                    <div class="section-title flex items-center justify-between">
+                                                        <span>Charts & Visualizations</span>
+                                                        <button id="hideChartsBtn" class="btn btn-ghost">✖︎ Hide Charts</button>
+                                                    </div>
+                                                    <div id="chartsAccordion">
+                                                        <!-- Accordions rendered by JS -->
+                                                    </div>
+                                                </div>
+                                            </section>
+                                            <!-- Recent Activity -->
+                                            <section class="mb-6">
+                                                <div class="card p-4">
+                                                    <div class="section-title">Recent Activity</div>
+                                                    <div id="activityFeed" class="grid grid-cols-1 gap-4"></div>
+                                                </div>
+                                            </section>
+                                            <!-- Task Tracker -->
+                                            <section class="mb-6">
+                                                <div class="card p-4">
+                                                    <div class="section-title">Task Tracker</div>
+                                                    <ul id="taskList" class="space-y-2">
+                                                        <li><input type="checkbox" class="mr-2"/> <span>Prepare QBR deck for Birkenstock</span> <span class="subtle ml-2">Due: 2025-09-15</span> <span class="chip ml-2">High</span> <span class="chip ml-2">Nirmal</span></li>
+                                                        <li><input type="checkbox" class="mr-2"/> <span>Review CSS report for CSL Seqirus</span> <span class="subtle ml-2">Due: 2025-09-20</span> <span class="chip ml-2">Medium</span> <span class="chip ml-2">Jane</span></li>
+                                                        <li><input type="checkbox" class="mr-2"/> <span>Update API landscape for Gard</span> <span class="subtle ml-2">Due: 2025-09-25</span> <span class="chip ml-2">Low</span> <span class="chip ml-2">John</span></li>
+                                                        <li><input type="checkbox" class="mr-2"/> <span>Schedule renewal call for Wates</span> <span class="subtle ml-2">Due: 2025-09-18</span> <span class="chip ml-2">High</span> <span class="chip ml-2">Emily</span></li>
+                                                    </ul>
+                                                    <div class="mt-4 flex flex-wrap gap-2">
+                                                        <input id="newTask" type="text" class="border rounded px-2 py-1 mr-2" placeholder="Task..."/>
+                                                        <input id="newDue" type="date" class="border rounded px-2 py-1 mr-2"/>
+                                                        <select id="newPriority" class="border rounded px-2 py-1 mr-2">
+                                                            <option>High</option><option>Medium</option><option>Low</option>
+                                                        </select>
+                                                        <input id="newAssignee" type="text" class="border rounded px-2 py-1 mr-2" placeholder="Assignee"/>
+                                                        <button id="addTask" class="btn btn-ghost">Add Task</button>
+                                                    </div>
+                                                    <div class="mt-4">
+                                                        <button id="exportTasks" class="btn btn-ghost">Export Tasks (CSV)</button>
+                                                        <button id="printOverview" class="btn btn-ghost">Print Overview</button>
+                                                    </div>
+                                                </div>
+                                            </section>
+    </div>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <!-- SheetJS for Excel import/export -->
+        <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
+        <script>
+        // --- Table-first, Charts-on-demand controller ---
+        // Data for table and charts (will be replaced by live data)
+        let ACCOUNTS = [
+            {account:'Birkenstock', adoption:82, css:8.1, expertise:4, vcoresProd:10.2, vcoresPre:18.8, envs:5, renewal:'2026-03-15', risk:'Green'},
+            {account:'CSL Seqirus', adoption:74, css:7.8, expertise:3, vcoresProd:14.0, vcoresPre:20.0, envs:4, renewal:'2025-12-01', risk:'Amber'},
+            {account:'Gard', adoption:68, css:8.3, expertise:5, vcoresProd:19.9, vcoresPre:50.6, envs:7, renewal:'2026-06-30', risk:'Green'},
+            {account:'Wates', adoption:49, css:7.5, expertise:2, vcoresProd:12.0, vcoresPre:22.5, envs:3, renewal:'2025-11-15', risk:'Red'}
+        ];
+
+        // Table state
+        let CURRENT_FILTER = 'all';
+        let CURRENT_SEARCH = '';
+        let CURRENT_SORT = { key: 'account', dir: 'asc' };
+
+        // UI controller
+        const UI = {
+            state: { chartsOpen: false, openAccordions: {} },
+            load() {
+                this.state.chartsOpen = localStorage.getItem("chartsOpen") === "true";
+                const raw = localStorage.getItem("openAccordions");
+                this.state.openAccordions = raw ? JSON.parse(raw) : {};
+            },
+            save() {
+                localStorage.setItem("chartsOpen", String(this.state.chartsOpen));
+                localStorage.setItem("openAccordions", JSON.stringify(this.state.openAccordions));
+            },
+            toggleCharts() {
+                this.state.chartsOpen = !this.state.chartsOpen;
+                this.save();
+                renderChartsPanel();
+            },
+            toggleAccordion(id) {
+                this.state.openAccordions[id] = !this.state.openAccordions[id];
+                this.save();
+                renderOneChart(id);
+            }
+        };
+
+        // --- Render Table ---
+        function renderTable(filter='all') {
+            const tbody = document.getElementById('accountsTbody');
+            tbody.innerHTML = '';
+
+            // Persist current filter
+            CURRENT_FILTER = filter;
+
+            // Filter by risk
+            let rows = ACCOUNTS.filter(acc => filter==='all' || (acc.risk||'').toLowerCase()===filter);
+
+            // Search across fields
+            if (CURRENT_SEARCH) {
+                const q = CURRENT_SEARCH.toLowerCase();
+                rows = rows.filter(acc => {
+                    return [
+                        acc.account,
+                        acc.risk,
+                        acc.renewal,
+                        String(acc.adoption),
+                        String(acc.css),
+                        String(acc.expertise),
+                        String(acc.vcoresProd),
+                        String(acc.vcoresPre),
+                        String(acc.envs)
+                    ].some(v => String(v||'').toLowerCase().includes(q));
+                });
+            }
+
+            // Sort
+            const key = CURRENT_SORT.key;
+            const dir = CURRENT_SORT.dir === 'asc' ? 1 : -1;
+            rows.sort((a,b)=>{
+                let va = a[key];
+                let vb = b[key];
+                // date sort for renewal
+                if (key==='renewal') {
+                    va = new Date(va||0).getTime();
+                    vb = new Date(vb||0).getTime();
+                }
+                const na = Number(va), nb = Number(vb);
+                const bothNum = Number.isFinite(na) && Number.isFinite(nb);
+                if (bothNum) return (na-nb)*dir;
+                return String(va||'').localeCompare(String(vb||''))*dir;
+            });
+
+            rows.forEach((acc, idx) => {
+                const tr = document.createElement('tr');
+                let rowClass = '';
+                if(acc.risk==='Red') rowClass = 'bg-red-50 border border-red-300 dark:bg-red-900 dark:border-red-700';
+                tr.className = rowClass + ' account-row';
+                tr.innerHTML = `
+                    <td class="px-4 py-2 font-bold" contenteditable="true" data-field="account">${acc.account}</td>
+                    <td class="px-4 py-2" contenteditable="true" data-field="adoption">${acc.adoption}</td>
+                    <td class="px-4 py-2" contenteditable="true" data-field="css">${acc.css}</td>
+                    <td class="px-4 py-2" contenteditable="true" data-field="expertise">${acc.expertise}</td>
+                    <td class="px-4 py-2" contenteditable="true" data-field="vcoresProd">${acc.vcoresProd}</td>
+                    <td class="px-4 py-2" contenteditable="true" data-field="vcoresPre">${acc.vcoresPre}</td>
+                    <td class="px-4 py-2" contenteditable="true" data-field="envs">${acc.envs}</td>
+                    <td class="px-4 py-2" contenteditable="true" data-field="renewal">${acc.renewal}</td>
+                    <td class="px-4 py-2" contenteditable="true" data-field="risk">${acc.risk}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            // Inline edit logic
+            tbody.querySelectorAll('td[contenteditable]').forEach(td => {
+                td.addEventListener('blur', function() {
+                    const idx = td.parentElement.rowIndex-1;
+                    const field = td.dataset.field;
+                    let val = td.textContent.trim();
+                    if(field==='adoption'||field==='css'||field==='expertise'||field==='vcoresProd'||field==='vcoresPre'||field==='envs') val = Number(val);
+                    ACCOUNTS[idx][field] = val;
+                    localStorage.setItem('ACCOUNTS', JSON.stringify(ACCOUNTS));
+                    renderTable(document.querySelector('.chip.filter-chip.active')?.dataset.filter||'all');
+                });
+            });
+        }
+
+        // --- Filter chips ---
+        document.addEventListener('DOMContentLoaded',()=>{
+            document.querySelectorAll('.chip.filter-chip').forEach(chip=>{
+                chip.onclick=function(){
+                    document.querySelectorAll('.chip.filter-chip').forEach(c=>c.classList.remove('active'));
+                    chip.classList.add('active');
+                    renderTable(chip.dataset.filter);
+                }
+            });
+            document.querySelector('.chip.filter-chip[data-filter="all"]').classList.add('active');
+            // Search input
+            const searchEl = document.getElementById('searchInput');
+            if (searchEl) {
+                searchEl.addEventListener('input', (e)=>{
+                    CURRENT_SEARCH = e.target.value.trim();
+                    renderTable(CURRENT_FILTER);
+                });
+            }
+
+            // Sort headers
+            document.querySelectorAll('#accountsTable thead th[data-key]').forEach(th=>{
+                th.addEventListener('click', ()=>{
+                    const key = th.getAttribute('data-key');
+                    if (CURRENT_SORT.key === key) {
+                        CURRENT_SORT.dir = CURRENT_SORT.dir === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        CURRENT_SORT = { key, dir: 'asc' };
+                    }
+                    // simple visual hint
+                    document.querySelectorAll('#accountsTable thead th').forEach(h=>h.textContent=h.textContent.replace(/[\s↑↓]+$/,''));
+                    const arrow = CURRENT_SORT.dir==='asc' ? ' ↑' : ' ↓';
+                    th.textContent = th.textContent.replace(/[\s↑↓]+$/,'') + arrow;
+                    renderTable(CURRENT_FILTER);
+                });
+            });
+
+            renderTable('all');
+        });
+
+        // --- Charts Panel ---
+        function renderChartsPanel() {
+            const root = document.getElementById('chartsRoot');
+            if(UI.state.chartsOpen) {
+                root.classList.remove('hidden');
+                document.getElementById('toggleChartsBtn').classList.add('hidden');
+            } else {
+                root.classList.add('hidden');
+                document.getElementById('toggleChartsBtn').classList.remove('hidden');
+            }
+            renderAccordions();
+        }
+
+        // --- Accordions ---
+        const CHARTS = [
+            {id:'vcores', label:'vCores Distribution (Prod vs Pre-Prod)'},
+            {id:'expertise', label:'Technical Expertise Levels'},
+            {id:'env', label:'Environment Coverage'},
+            {id:'bubble', label:'Account Bubble Graph'},
+            {id:'cssStacked', label:'CSS Stacked Components'},
+            {id:'renewal', label:'Renewal Timeline'}
+        ];
+        function renderAccordions() {
+            const accRoot = document.getElementById('chartsAccordion');
+            accRoot.innerHTML = '';
+            CHARTS.forEach(chart => {
+                const open = UI.state.openAccordions[chart.id];
+                const div = document.createElement('div');
+                div.className = 'rounded-lg border mb-3';
+                div.innerHTML = `
+                    <button class="w-full flex items-center justify-between p-3" data-acc="${chart.id}" onclick="UI.toggleAccordion('${chart.id}')">
+                        <span class="font-medium">${chart.label}</span>
+                        <div class="flex items-center gap-2">
+                            <button type="button" class="text-sm underline" onclick="openModal('${chart.id}');event.stopPropagation()">Open in Modal</button>
+                            <svg width="20" height="20" fill="none"><path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="2"/></svg>
+                        </div>
+                    </button>
+                    <div id="acc-${chart.id}" class="px-3 pb-3${open?'':' hidden'}" style="max-width:680px;margin:auto;">
+                        <canvas id="chart-${chart.id}" height="220" style="max-width:100%;height:220px;"></canvas>
+                    </div>
+                `;
+                accRoot.appendChild(div);
+                if(open) renderOneChart(chart.id);
+            });
+        }
+
+        // --- Chart.js instance management ---
+        const chartInstances = {};
+        function destroyChart(id) {
+            if(chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; }
+        }
+        function renderOneChart(id) {
+            destroyChart(id);
+            const ctx = document.getElementById('chart-'+id)?.getContext('2d');
+            if(!ctx) return;
+            // Chart data logic
+            if(id==='vcores') {
+                chartInstances[id] = new Chart(ctx, {
+                    type:'bar',
+                    data:{
+                        labels:ACCOUNTS.map(a=>a.account),
+                        datasets:[
+                            {label:'Prod',data:ACCOUNTS.map(a=>a.vcoresProd),backgroundColor:'#3B82F6'},
+                            {label:'Pre-Prod',data:ACCOUNTS.map(a=>a.vcoresPre),backgroundColor:'#F59E0B'}
+                        ]
+                    },
+                    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}
+                });
+            } else if(id==='expertise') {
+                chartInstances[id] = new Chart(ctx, {
+                    type:'bar',
+                    data:{labels:ACCOUNTS.map(a=>a.account),datasets:[{label:'Expertise',data:ACCOUNTS.map(a=>a.expertise),backgroundColor:'#10B981'}]},
+                    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}
+                });
+            } else if(id==='env') {
+                chartInstances[id] = new Chart(ctx, {
+                    type:'bar',
+                    data:{labels:ACCOUNTS.map(a=>a.account),datasets:[{label:'Environments',data:ACCOUNTS.map(a=>a.envs),backgroundColor:'#6366F1'}]},
+                    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}
+                });
+            } else if(id==='bubble') {
+                chartInstances[id] = new Chart(ctx, {
+                    type:'bubble',
+                    data:{datasets:ACCOUNTS.map(a=>({
+                        label:a.account,
+                        data:[{x:a.adoption,y:a.css,r:8+2*a.expertise}],
+                        backgroundColor:a.risk==='Red'?'#EF4444':a.risk==='Amber'?'#F59E0B':a.risk==='Green'?'#10B981':'#6366F1',
+                        borderColor:'#1F2937',
+                        hoverBackgroundColor:'#3B82F6',
+                        tooltip:{callbacks:{label:()=>`${a.account}: vCores ${a.vcoresProd}/${a.vcoresPre}, Env ${a.envs}`}}
+                    }))},
+                    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{min:0,max:100,title:{display:true,text:'Adoption %'}},y:{min:0,max:10,title:{display:true,text:'CSS Score'}}}}
+                });
+            } else if(id==='cssStacked') {
+                chartInstances[id] = new Chart(ctx, {
+                    type:'bar',
+                    data:{labels:ACCOUNTS.map(a=>a.account),datasets:[{label:'CSS',data:ACCOUNTS.map(a=>a.css),backgroundColor:'#3B82F6'}]},
+                    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}
+                });
+            } else if(id==='renewal') {
+                chartInstances[id] = new Chart(ctx, {
+                    type:'line',
+                    data:{labels:ACCOUNTS.map(a=>a.account),datasets:[{label:'Days Until Renewal',data:ACCOUNTS.map(a=>daysUntil(a.renewal)),borderColor:'#6366F1',backgroundColor:'rgba(99,102,241,.1)',fill:true,tension:.2}]},
+                    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}
+                });
+            }
+        }
+
+        // --- Modal logic ---
+        let modalOpen = false;
+        function openModal(id) {
+            if(modalOpen) return;
+            modalOpen = true;
+            const modal = document.createElement('div');
+            modal.id = 'chartModal';
+            modal.className = 'fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50';
+            modal.innerHTML = `<div class="bg-white dark:bg-gray-900 rounded-lg p-8 shadow-lg w-full max-w-2xl relative">
+                <button class="absolute top-2 right-2 btn btn-ghost" onclick="closeModal()">✖︎</button>
+                <div class="mb-4 font-bold text-lg">${CHARTS.find(c=>c.id===id).label}</div>
+                <canvas id="modalChart" height="320" style="max-width:100%;height:320px;"></canvas>
+            </div>`;
+            document.body.appendChild(modal);
+            // Focus trap
+            modal.tabIndex = -1; modal.focus();
+            // Render chart
+            setTimeout(()=>{
+                destroyChart('modal');
+                const ctx = document.getElementById('modalChart').getContext('2d');
+                // Use same logic as renderOneChart
+                if(id==='vcores') {
+                    chartInstances['modal'] = new Chart(ctx, {
+                        type:'bar',
+                        data:{labels:ACCOUNTS.map(a=>a.account),datasets:[{label:'Prod',data:ACCOUNTS.map(a=>a.vcoresProd),backgroundColor:'#3B82F6'},{label:'Pre-Prod',data:ACCOUNTS.map(a=>a.vcoresPre),backgroundColor:'#F59E0B'}]},
+                        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}
+                    });
+                } else if(id==='expertise') {
+                    chartInstances['modal'] = new Chart(ctx, {
+                        type:'bar',
+                        data:{labels:ACCOUNTS.map(a=>a.account),datasets:[{label:'Expertise',data:ACCOUNTS.map(a=>a.expertise),backgroundColor:'#10B981'}]},
+                        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}
+                    });
+                } else if(id==='env') {
+                    chartInstances['modal'] = new Chart(ctx, {
+                        type:'bar',
+                        data:{labels:ACCOUNTS.map(a=>a.account),datasets:[{label:'Environments',data:ACCOUNTS.map(a=>a.envs),backgroundColor:'#6366F1'}]},
+                        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}
+                    });
+                } else if(id==='bubble') {
+                    chartInstances['modal'] = new Chart(ctx, {
+                        type:'bubble',
+                        data:{datasets:ACCOUNTS.map(a=>({label:a.account,data:[{x:a.adoption,y:a.css,r:12+2*a.expertise}],backgroundColor:a.risk==='Red'?'#EF4444':a.risk==='Amber'?'#F59E0B':a.risk==='Green'?'#10B981':'#6366F1',borderColor:'#1F2937',hoverBackgroundColor:'#3B82F6',tooltip:{callbacks:{label:()=>`${a.account}: vCores ${a.vcoresProd}/${a.vcoresPre}, Env ${a.envs}`}}}))},
+                        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{min:0,max:100,title:{display:true,text:'Adoption %'}},y:{min:0,max:10,title:{display:true,text:'CSS Score'}}}}
+                    });
+                } else if(id==='cssStacked') {
+                    chartInstances['modal'] = new Chart(ctx, {
+                        type:'bar',
+                        data:{labels:ACCOUNTS.map(a=>a.account),datasets:[{label:'CSS',data:ACCOUNTS.map(a=>a.css),backgroundColor:'#3B82F6'}]},
+                        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}
+                    });
+                } else if(id==='renewal') {
+                    chartInstances['modal'] = new Chart(ctx, {
+                        type:'line',
+                        data:{labels:ACCOUNTS.map(a=>a.account),datasets:[{label:'Days Until Renewal',data:ACCOUNTS.map(a=>daysUntil(a.renewal)),borderColor:'#6366F1',backgroundColor:'rgba(99,102,241,.1)',fill:true,tension:.2}]},
+                        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}
+                    });
+                }
+            },100);
+            // ESC closes modal
+            document.addEventListener('keydown',escListener);
+        }
+        function closeModal() {
+            destroyChart('modal');
+            const modal = document.getElementById('chartModal');
+            if(modal) modal.remove();
+            modalOpen = false;
+            document.removeEventListener('keydown',escListener);
+        }
+        function escListener(e){ if(e.key==='Escape') closeModal(); }
+
+        // --- Keyboard shortcut ---
+        document.addEventListener('keydown',function(e){
+            if(e.key==='c'||e.key==='C') UI.toggleCharts();
+        });
+
+        // --- Show/Hide Charts button ---
+        document.getElementById('toggleChartsBtn').onclick = ()=>UI.toggleCharts();
+        document.getElementById('hideChartsBtn').onclick = ()=>UI.toggleCharts();
+
+        // --- Initial load ---
+        UI.load();
+        renderChartsPanel();
+
+        // --- Utility ---
+        function daysUntil(dateStr){
+            const target = new Date(dateStr);
+            const now = new Date();
+            const diff = Math.ceil((target - now)/(1000*60*60*24));
+            return Math.max(diff, 0);
+        }
+
+        // --- Task Tracker (dynamic) + Daily schedule ---
+        (function taskTracker(){
+            const listEl = document.getElementById('taskList');
+            const elNewTask = document.getElementById('newTask');
+            const elNewDue = document.getElementById('newDue');
+            const elNewPriority = document.getElementById('newPriority');
+            const elNewAssignee = document.getElementById('newAssignee');
+            const elAdd = document.getElementById('addTask');
+            const elExport = document.getElementById('exportTasks');
+            const elPrint = document.getElementById('printOverview');
+
+            // In-memory tasks; load from localStorage if present
+            try { window.TASKS = JSON.parse(localStorage.getItem('csm.tasks')||'null') || window.TASKS || []; } catch {}
+
+            function saveTasks(){ try { localStorage.setItem('csm.tasks', JSON.stringify(window.TASKS)); } catch {}
+            }
+
+            function renderTasks(){
+                if (!listEl) return;
+                listEl.innerHTML = '';
+                const todayStr = new Date().toISOString().slice(0,10);
+                const tasks = (window.TASKS||[]).slice().sort((a,b)=>String(a.dueDate||'').localeCompare(String(b.dueDate||'')));
+                tasks.forEach((t, i)=>{
+                    const li = document.createElement('li');
+                    const due = t.dueDate ? `Due: ${t.dueDate}` : '';
+                    const pri = t.priority ? `<span class=\"chip ml-2\">${t.priority}</span>` : '';
+                    const asg = t.assignee ? `<span class=\"chip ml-2\">${t.assignee}</span>` : '';
+                    const isOverdue = t.dueDate && t.dueDate < todayStr && !t.done;
+                    const isToday = t.dueDate && t.dueDate === todayStr;
+                    const textClass = t.done ? 'task-done' : '';
+                    const badge = isOverdue ? '<span class="chip ml-2" style="background:#fee2e2">Overdue</span>' : isToday ? '<span class="chip ml-2" style="background:#d1fae5">Today</span>' : '';
+                    li.innerHTML = `<input type="checkbox" class="mr-2" ${t.done?'checked':''} data-idx="${i}"/> <span class="${textClass}">${escapeHtml(t.title||'Untitled')}</span> <span class="subtle ml-2">${due}</span> ${pri} ${asg} ${badge}`;
+                    listEl.appendChild(li);
+                });
+                // checkbox handlers
+                listEl.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+                    cb.addEventListener('change', (e)=>{
+                        const idx = Number(e.target.getAttribute('data-idx'));
+                        if (!Number.isFinite(idx)) return;
+                        window.TASKS[idx].done = e.target.checked;
+                        saveTasks();
+                        renderTasks();
+                    })
+                });
+            }
+
+            function addTask(){
+                const t = {
+                    id: crypto.getRandomValues(new Uint32Array(1))[0].toString(36),
+                    title: (elNewTask?.value||'').trim(),
+                    dueDate: elNewDue?.value||'',
+                    priority: elNewPriority?.value||'',
+                    assignee: (elNewAssignee?.value||'').trim(),
+                    done: false
+                };
+                if (!t.title) return;
+                window.TASKS = (window.TASKS||[]).concat([t]);
+                saveTasks();
+                if (elNewTask) elNewTask.value = '';
+                if (elNewDue) elNewDue.value = '';
+                if (elNewAssignee) elNewAssignee.value = '';
+                renderTasks();
+            }
+
+            function exportTasksCSV(){
+                const rows = [['title','dueDate','priority','assignee','done']].concat((window.TASKS||[]).map(t=>[
+                    t.title||'', t.dueDate||'', t.priority||'', t.assignee||'', t.done?'TRUE':'FALSE'
+                ]));
+                const csv = rows.map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
+                const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'tasks.csv';
+                a.click();
+            }
+
+            function printOverview(){ window.print(); }
+
+            // Daily rollup: run once per day (local)
+            function dailyTick(){
+                const today = new Date().toISOString().slice(0,10);
+                const last = localStorage.getItem('csm.daily.last')||'';
+                if (last !== today) {
+                    // Example rule: mark tasks due before today as overdue badge (render handles),
+                    // and auto-uncheck any tasks whose dueDate is today and done incorrectly
+                    (window.TASKS||[]).forEach(t=>{
+                        if (t.dueDate===today && t.done===true) {/* leave as is */}
+                    });
+                    localStorage.setItem('csm.daily.last', today);
+                }
+            }
+
+            function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c])); }
+
+            // Events
+            elAdd?.addEventListener('click', addTask);
+            elExport?.addEventListener('click', exportTasksCSV);
+            elPrint?.addEventListener('click', printOverview);
+            try { window.addEventListener('tasks:reload', renderTasks); } catch {}
+
+            // Init
+            dailyTick();
+            renderTasks();
+            // Check around midnight to refresh badges
+            setInterval(dailyTick, 60*60*1000);
+        })();
+
+        // --- Google Sheets Integration ---
+        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/placeholder-sheet-id/edit?usp=sharing';
+        // Backend Web App endpoint (Google Apps Script deployment URL)
+        const SHEETS_WEBAPP_URL = 'https://script.google.com/macros/s/REPLACE_WITH_DEPLOYMENT_ID/exec';
+        // Keep compatibility with later code references
+        const SHEET_EMBED_URL = typeof SHEET_URL !== 'undefined' ? SHEET_URL : '';
+        function getSheetsWebAppUrl(){ try { return localStorage.getItem('sheets.webapp.url') || SHEETS_WEBAPP_URL; } catch { return SHEETS_WEBAPP_URL; } }
+        function getSheetEmbedUrl(){ try { return localStorage.getItem('sheets.embed.url') || SHEET_EMBED_URL || SHEET_URL || ''; } catch { return SHEET_EMBED_URL || SHEET_URL || ''; } }
+        const sheetsUI = {
+            status: document.getElementById('sheetsStatus'),
+            frame: document.getElementById('sheetFrame'),
+            wrap: document.getElementById('sheetEmbedWrap'),
+            setStatus(msg, isError = false) {
+                this.status.textContent = msg;
+                this.status.className = `text-sm ${isError ? 'text-red-500' : 'text-gray-500'} ml-2`;
+            }
+        };
+
+        // Toggle embedded sheet visibility
+        document.getElementById('btnToggleSheet').addEventListener('click', () => {
+            const isHidden = sheetsUI.wrap.classList.contains('hidden');
+            sheetsUI.wrap.classList.toggle('hidden');
+            if (isHidden && !sheetsUI.frame.src) {
+                sheetsUI.frame.src = getSheetEmbedUrl();
+            }
+            document.getElementById('btnToggleSheet').textContent = 
+                isHidden ? '📄 Hide Embedded Sheet' : '📄 Show Embedded Sheet';
+        });
+
+        // Import from Google Sheets
+        document.getElementById('btnLoadFromSheets').addEventListener('click', async () => {
+            sheetsUI.setStatus('Importing data...');
+            try {
+                const url = new URL(getSheetsWebAppUrl());
+                url.searchParams.set('what', 'load');
+                const res = await fetch(url.toString());
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+                const rows = Array.isArray(data.accounts) ? data.accounts : Array.isArray(data) ? data : [];
+                // Try to map common field names to current table schema
+                window.ACCOUNTS = rows.map(r=>({
+                    account: r.account || r.name || r.Account || '',
+                    adoption: Number(r.adoption ?? r.adoptionPct ?? r.Adoption ?? 0),
+                    css: Number(r.css ?? r.cssScore ?? r.CSS ?? 0),
+                    expertise: Number(r.expertise ?? r.technicalExpertise ?? r.Expertise ?? 0),
+                    vcoresProd: Number(r.vcoresProd ?? r.Prod ?? 0),
+                    vcoresPre: Number(r.vcoresPre ?? r.vcoresPreProd ?? r.PreProd ?? 0),
+                    envs: Number(r.envs ?? r.environmentsCount ?? r.Environments ?? 0),
+                    renewal: r.renewal || r.renewalDate || r.Renewal || '',
+                    risk: r.risk || r.renewalRisk || r.Risk || 'Green'
+                }));
+                try { localStorage.setItem('csm.accounts', JSON.stringify(window.ACCOUNTS)); } catch {}
+                sheetsUI.setStatus('Data imported successfully!');
+                if (typeof renderTable === 'function') renderTable();
+                if (typeof renderChartsPanel === 'function') renderChartsPanel();
+            } catch (err) {
+                sheetsUI.setStatus('Failed to import data', true);
+                console.error('Import error:', err);
+            }
+        });
+
+        // Bootstrap (create + seed a new Sheet and store SHEET_ID in script)
+        document.getElementById('btnBootstrapSheet').addEventListener('click', async () => {
+            if (!getSheetsWebAppUrl() || getSheetsWebAppUrl().includes('REPLACE_WITH')) {
+                alert('Please set SHEETS_WEBAPP_URL first.');
+                return;
+            }
+            sheetsUI.setStatus('Bootstrapping sheet...');
+            try {
+                const url = new URL(getSheetsWebAppUrl());
+                url.searchParams.set('what', 'bootstrap');
+                const res = await fetch(url.toString());
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+                if (data && data.url) {
+                    sheetsUI.setStatus('Sheet created ✓');
+                    sheetsUI.wrap.classList.remove('hidden');
+                    sheetsUI.frame.src = data.url;
+                    document.getElementById('btnToggleSheet').textContent = '📄 Hide Embedded Sheet';
+                } else {
+                    sheetsUI.setStatus('Bootstrap done');
+                }
+            } catch (err) {
+                console.error(err);
+                sheetsUI.setStatus('Bootstrap failed', true);
+            }
+        });
+
+        // Auto-load on first paint for real-time
+        window.addEventListener('load', () => {
+            // Attempt to load cached first
+            try {
+                const cached = JSON.parse(localStorage.getItem('csm.accounts')||'null');
+                if (Array.isArray(cached) && cached.length) { window.ACCOUNTS = cached; renderTable(CURRENT_FILTER); renderChartsPanel(); }
+            } catch {}
+            // Then refresh from Sheets
+            document.getElementById('btnLoadFromSheets')?.click();
+        });
+
+        // Export to Google Sheets
+        document.getElementById('btnSaveToSheets').addEventListener('click', async () => {
+            sheetsUI.setStatus('Exporting data...');
+            try {
+                const url = new URL(getSheetsWebAppUrl());
+                url.searchParams.set('what', 'save');
+                const payload = {
+                    accounts: typeof serializeAccounts === 'function' ? serializeAccounts(window.ACCOUNTS) : (window.ACCOUNTS || []),
+                    timestamp: new Date().toISOString()
+                };
+                const res = await fetch(url.toString(), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                await res.json().catch(()=>null);
+                sheetsUI.setStatus('Data exported successfully!');
+            } catch (err) {
+                sheetsUI.setStatus('Failed to export data', true);
+                console.error('Export error:', err);
+            }
+        });
+
+        // --- Existing logic for login, activity, tasks, etc. ---
+        </script>
+
+        <!-- External Inputs: conversations.json and chat.html -->
+        <script>
+        (function externalIngest(){
+          async function tryFetch(url){
+            try { const r = await fetch(url); if (!r.ok) return null; return await r.text(); } catch { return null; }
+          }
+          function safeJSON(txt){ try { return JSON.parse(txt); } catch { return null; } }
+          function pushActivity(items){
+            try {
+              const feed = document.getElementById('activityFeed'); if (!feed) return;
+              feed.innerHTML = '';
+              (items||[]).slice(0,9).forEach(it=>{
+                const div = document.createElement('div');
+                div.className = 'card p-4';
+                const date = it.date ? `<div class="text-blue-500 text-sm">${it.date}</div>` : '';
+                const title = it.title ? `<div class="font-bold">${escapeHtml(it.title)}</div>` : '';
+                const note = it.note || it.text || '';
+                div.innerHTML = `${date}${title}<div class="subtle">${escapeHtml(note)}</div>`;
+                feed.appendChild(div);
+              });
+            } catch {}
+          }
+          function toTask(obj){
+            return {
+              id: obj.id || crypto.getRandomValues(new Uint32Array(1))[0].toString(36),
+              title: obj.title || obj.text || 'Task',
+              dueDate: obj.dueDate || obj.due || '',
+              priority: obj.priority || obj.severity || obj.status || '',
+              assignee: obj.assignee || obj.owner || '',
+              done: !!(obj.done || obj.completed)
+            };
+          }
+          function extractFromChatHTML(html){
+            const div = document.createElement('div');
+            div.innerHTML = html;
+            const items = [];
+            // Prefer list items
+            div.querySelectorAll('li').forEach(li=>{
+              const text = li.textContent.trim();
+              if (text) items.push({ title: text.split(':')[0], note: text, date: '' });
+            });
+            if (!items.length) {
+              div.querySelectorAll('p').forEach(p=>{
+                const t = p.textContent.trim();
+                if (t) items.push({ title: t.slice(0,60)+'…', note: t, date: '' });
+              });
+            }
+            return items;
+          }
+
+          async function ingest(){
+            // conversations.json
+            const jsonTxt = (await tryFetch('conversations.json')) || (await tryFetch('data/conversations.json'));
+            if (jsonTxt) {
+              const js = safeJSON(jsonTxt);
+              if (Array.isArray(js)) {
+                const tasks = js.filter(x=>String(x.type||'').toLowerCase()==='task' || /\btask\b/i.test(String(x.text||''))).map(toTask);
+                if (tasks.length) {
+                  window.TASKS = (window.TASKS||[]).concat(tasks);
+                  try { localStorage.setItem('csm.tasks', JSON.stringify(window.TASKS)); } catch {}
+                  window.dispatchEvent(new Event('tasks:reload'));
+                }
+                const acts = js.filter(x=>!String(x.type||'').toLowerCase().includes('task')).map(x=>({ date: x.timestamp||'', title: x.author||'', note: x.text||'' }));
+                if (acts.length) pushActivity(acts);
+              } else if (js && Array.isArray(js.messages)) {
+                const msgs = js.messages;
+                const tasks = msgs.filter((m:any)=>m.kind==='task' || /\btask\b/i.test(String(m.text||''))).map(toTask);
+                if (tasks.length) {
+                  window.TASKS = (window.TASKS||[]).concat(tasks); try { localStorage.setItem('csm.tasks', JSON.stringify(window.TASKS)); } catch {}
+                  window.dispatchEvent(new Event('tasks:reload'));
+                }
+                const acts = msgs.map((m:any)=>({ date: m.timestamp||'', title: m.author||'', note: m.text||'' }));
+                if (acts.length) pushActivity(acts);
+              }
+            }
+            // chat.html
+            const chatTxt = (await tryFetch('chat.html')) || (await tryFetch('data/chat.html'));
+            if (chatTxt) {
+              const acts = extractFromChatHTML(chatTxt);
+              if (acts.length) pushActivity(acts);
+            }
+          }
+
+          // Run after initial render
+          window.addEventListener('load', ()=>{ ingest().catch(()=>{}); });
+          function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c])); }
+        })();
+        </script>
+
+        <!-- Excel Integration (Embed + Import/Export) -->
+        <script>
+        (function excelIntegration(){
+          const elImport = document.getElementById('btnImportExcel');
+          const elExport = document.getElementById('btnExportExcel');
+          const elUploadExcel = document.getElementById('btnUploadExcelDrive');
+          const elUploadJson  = document.getElementById('btnUploadJsonDrive');
+          const elToggle = document.getElementById('btnToggleExcel');
+          const elUrl    = document.getElementById('excelEmbedUrl');
+          const elSave   = document.getElementById('btnSaveExcelUrl');
+          const elWrap   = document.getElementById('excelEmbedWrap');
+          const elFrame  = document.getElementById('excelFrame');
+          const elFile   = document.getElementById('fileExcel');
+          const elStat   = document.getElementById('excelStatus');
+
+          const URL_KEY = 'excel.embed.url';
+          const DRIVE_FOLDER_KEY = 'drive.folderId';
+          try { const saved = localStorage.getItem(URL_KEY); if (saved && elUrl) { elUrl.value = saved; if (elFrame && !elFrame.src) elFrame.src = saved; } } catch {}
+
+          function setStatus(msg, err){
+            if(elStat){ elStat.textContent = msg; elStat.className = `text-sm ${err?'text-red-500':'text-gray-500'} ml-2`; }
+            const driveStat = document.getElementById('driveStatus');
+            if (driveStat) { driveStat.textContent = msg; driveStat.className = `text-sm ${err?'text-red-500':'text-gray-500'}`; }
+          }
+
+          elSave?.addEventListener('click', ()=>{
+            const url = (elUrl?.value||'').trim();
+            if(!url){ setStatus('Provide a valid Excel embed URL', true); return; }
+            try { localStorage.setItem(URL_KEY, url); } catch {}
+            if (elFrame) elFrame.src = url;
+            elWrap?.classList.remove('hidden');
+            if (elToggle) elToggle.textContent = '📊 Hide Embedded Excel';
+            setStatus('Excel embed URL saved ✓');
+          });
+
+          elToggle?.addEventListener('click', ()=>{
+            const nowHidden = elWrap?.classList.toggle('hidden');
+            if (elToggle) elToggle.textContent = nowHidden ? '📊 Show Embedded Excel' : '📊 Hide Embedded Excel';
+          });
+
+          elImport?.addEventListener('click', ()=> elFile?.click());
+          elFile?.addEventListener('change', async (e)=>{
+            const file = e.target.files && e.target.files[0];
+            if(!file){ return; }
+            setStatus('Reading Excel…');
+            try {
+              const buf = await file.arrayBuffer();
+              const wb = XLSX.read(buf, { type:'array' });
+              // Accounts sheet
+              const accSheetName = wb.SheetNames.find(n=>/accounts?/i.test(n)) || wb.SheetNames[0];
+              const accRows = XLSX.utils.sheet_to_json(wb.Sheets[accSheetName]||{}, { defval:'' });
+              if (accRows && accRows.length){ window.ACCOUNTS = accRows.map(mapAccountRow); try { localStorage.setItem('csm.accounts', JSON.stringify(window.ACCOUNTS)); } catch {} }
+              // Tasks sheet (optional)
+              const tasksName = wb.SheetNames.find(n=>/tasks?/i.test(n));
+              if (tasksName){
+                const tRows = XLSX.utils.sheet_to_json(wb.Sheets[tasksName]||{}, { defval:'' });
+                window.TASKS = tRows.map(mapTaskRow);
+                try { localStorage.setItem('csm.tasks', JSON.stringify(window.TASKS)); } catch {}
+              }
+              if (typeof renderTable==='function') renderTable(window.CURRENT_FILTER||'all');
+              if (typeof renderChartsPanel==='function') renderChartsPanel();
+              // Re-render tasks if our dynamic tracker is active
+              try { if (typeof window.dispatchEvent==='function'){ window.dispatchEvent(new Event('tasks:reload')); } } catch {}
+              setStatus('Excel imported ✓');
+            } catch(err){ console.error(err); setStatus('Excel import failed', true); }
+          });
+
+          elExport?.addEventListener('click', ()=>{
+            try {
+              const wb = XLSX.utils.book_new();
+              // Accounts
+              const accs = Array.isArray(window.ACCOUNTS)? window.ACCOUNTS : [];
+              const accRows = accs.map(a=>({
+                account:a.account||a.name||'', adoption:a.adoption??a.adoptionPct??'', css:a.css??a.cssScore??'',
+                expertise:a.expertise??a.technicalExpertise??'', vcoresProd:a.vcoresProd??'', vcoresPre:a.vcoresPre??a.vcoresPreProd??'',
+                envs:a.envs??(Array.isArray(a.environments)?a.environments.length: a.environments||''), renewal:a.renewal||a.renewalDate||'', risk:a.risk||a.renewalRisk||''
+              }));
+              const wsA = XLSX.utils.json_to_sheet(accRows);
+              XLSX.utils.book_append_sheet(wb, wsA, 'Accounts');
+              // Tasks
+              const tasks = Array.isArray(window.TASKS)? window.TASKS : [];
+              const taskRows = tasks.map(t=>({ title:t.title||'', dueDate:t.dueDate||'', priority:t.priority||t.status||'', assignee:t.assignee||'', done: !!t.done }));
+              const wsT = XLSX.utils.json_to_sheet(taskRows);
+              XLSX.utils.book_append_sheet(wb, wsT, 'Tasks');
+              XLSX.writeFile(wb, 'dashboard_export.xlsx');
+              setStatus('Excel exported ✓');
+            } catch(err){ console.error(err); setStatus('Excel export failed', true); }
+          });
+
+          elUploadExcel?.addEventListener('click', async ()=>{
+            try {
+              const wb = XLSX.utils.book_new();
+              const accs = Array.isArray(window.ACCOUNTS)? window.ACCOUNTS : [];
+              const accRows = accs.map(a=>({
+                account:a.account||a.name||'', adoption:a.adoption??a.adoptionPct??'', css:a.css??a.cssScore??'',
+                expertise:a.expertise??a.technicalExpertise??'', vcoresProd:a.vcoresProd??'', vcoresPre:a.vcoresPre??a.vcoresPreProd??'',
+                envs:a.envs??(Array.isArray(a.environments)?a.environments.length: a.environments||''), renewal:a.renewal||a.renewalDate||'', risk:a.risk||a.renewalRisk||''
+              }));
+              const wsA = XLSX.utils.json_to_sheet(accRows);
+              XLSX.utils.book_append_sheet(wb, wsA, 'Accounts');
+              const tasks = Array.isArray(window.TASKS)? window.TASKS : [];
+              const taskRows = tasks.map(t=>({ title:t.title||'', dueDate:t.dueDate||'', priority:t.priority||t.status||'', assignee:t.assignee||'', done: !!t.done }));
+              const wsT = XLSX.utils.json_to_sheet(taskRows);
+              XLSX.utils.book_append_sheet(wb, wsT, 'Tasks');
+
+              const arrbuf = XLSX.write(wb, { bookType:'xlsx', type:'array' });
+              const b64 = arrayBufferToBase64(arrbuf);
+              const folderId = getDriveFolderId();
+              setStatus('Uploading to Drive…');
+              const resp = await fetch('/api/drive/upload', {
+                method:'POST', headers:{ 'Content-Type':'application/json' },
+                body: JSON.stringify({ name:`dashboard_export_${new Date().toISOString().slice(0,10)}.xlsx`, mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', contentBase64:b64, folderId })
+              });
+              if(!resp.ok) throw new Error('HTTP '+resp.status);
+              setStatus('Uploaded Excel to Drive ✓');
+            } catch(err){ console.error(err); setStatus('Drive upload failed', true); }
+          });
+
+          elUploadJson?.addEventListener('click', async ()=>{
+            try {
+              const folderId = getDriveFolderId();
+              setStatus('Uploading JSON to Drive…');
+              const resp = await fetch('/api/drive/export-json', {
+                method:'POST', headers:{ 'Content-Type':'application/json' },
+                body: JSON.stringify({ accounts: window.ACCOUNTS||[], tasks: window.TASKS||[], folderId })
+              });
+              if(!resp.ok) throw new Error('HTTP '+resp.status);
+              setStatus('Uploaded JSON to Drive ✓');
+            } catch(err){ console.error(err); setStatus('Drive upload failed', true); }
+          });
+
+          function getDriveFolderId(){
+            try { const saved = localStorage.getItem(DRIVE_FOLDER_KEY); if (saved) return saved; } catch {}
+            const id = prompt('Google Drive folder ID to upload into (saved locally):', '') || '';
+            try { if (id) localStorage.setItem(DRIVE_FOLDER_KEY, id); } catch {}
+            return id || undefined;
+          }
+
+          function arrayBufferToBase64(buf){
+            let binary='';
+            const bytes = new Uint8Array(buf);
+            const step = 0x8000;
+            for (let i=0;i<bytes.length;i+=step){ binary += String.fromCharCode.apply(null, bytes.subarray(i, i+step)); }
+            return btoa(binary);
+          }
+
+          function mapAccountRow(r){
+            return {
+              account: r.account||r.Account||r.name||'',
+              adoption: Number(r.adoption ?? r.Adoption ?? r.adoptionPct ?? r.AdoptionPct ?? 0),
+              css: Number(r.css ?? r.CSS ?? r.cssScore ?? 0),
+              expertise: Number(r.expertise ?? r.Expertise ?? r.technicalExpertise ?? 0),
+              vcoresProd: Number(r.vcoresProd ?? r.Prod ?? 0),
+              vcoresPre: Number(r.vcoresPre ?? r.vcoresPreProd ?? r.PreProd ?? 0),
+              envs: Number(r.envs ?? r.Environments ?? r.environmentsCount ?? (Array.isArray(r.environments)?r.environments.length: 0)),
+              renewal: r.renewal || r.Renewal || r.renewalDate || '',
+              risk: r.risk || r.Risk || r.renewalRisk || 'Green'
+            };
+          }
+
+          function mapTaskRow(r){
+            return {
+              id: String(r.id||'').trim() || crypto.getRandomValues(new Uint32Array(1))[0].toString(36),
+              title: r.title || r.Task || r.task || '',
+              dueDate: (r.dueDate || r.Due || '').toString().slice(0,10),
+              priority: r.priority || r.Priority || r.status || '',
+              assignee: r.assignee || r.Assignee || '',
+              done: r.done===true || String(r.done||'').toLowerCase()==='true' || String(r.status||'').toLowerCase()==='done'
+            };
+          }
+        })();
+        </script>
+
+        <!-- Integrations: Slack, Email, Slides, Sheets, Excel, Drive -->
+        <script>
+        (function integrations(){
+          // Dropdown and Modal wiring
+          const menuBtn = document.getElementById('btnIntegrationsMenu');
+          const dropdown = document.getElementById('integrationsDropdown');
+          const overlay = document.getElementById('modalOverlay');
+          const openSlackBtn = document.getElementById('openSlack');
+          const openEmailBtn = document.getElementById('openEmail');
+          const openSlidesBtn = document.getElementById('openSlides');
+          const openSheetsBtn = document.getElementById('openSheets');
+          const openExcelBtn  = document.getElementById('openExcel');
+          const openDriveBtn  = document.getElementById('openDrive');
+          const modals = {
+            modalSlack: document.getElementById('modalSlack'),
+            modalEmail: document.getElementById('modalEmail'),
+            modalSlides: document.getElementById('modalSlides'),
+            modalSheets: document.getElementById('modalSheets'),
+            modalExcel: document.getElementById('modalExcel'),
+            modalDrive: document.getElementById('modalDrive')
+          };
+          function closeAll(){ Object.values(modals).forEach(m=>m?.classList.add('hidden')); overlay?.classList.add('hidden'); }
+          function openModal(id){ closeAll(); overlay?.classList.remove('hidden'); modals[id]?.classList.remove('hidden'); hideDropdown(); }
+          function toggleDropdown(){ dropdown?.classList.toggle('hidden'); }
+          function hideDropdown(){ dropdown?.classList.add('hidden'); }
+          menuBtn?.addEventListener('click', (e)=>{ e.stopPropagation(); toggleDropdown(); });
+          document.addEventListener('click', (e)=>{ if(!dropdown?.contains(e.target) && e.target!==menuBtn){ hideDropdown(); } });
+          overlay?.addEventListener('click', closeAll);
+          document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeAll(); });
+          document.querySelectorAll('[data-close]')?.forEach(btn=>btn.addEventListener('click', ()=> closeAll()));
+          openSlackBtn?.addEventListener('click', ()=> openModal('modalSlack'));
+          openEmailBtn?.addEventListener('click', ()=> openModal('modalEmail'));
+          openSlidesBtn?.addEventListener('click', ()=> openModal('modalSlides'));
+          openSheetsBtn?.addEventListener('click', ()=> openModal('modalSheets'));
+          openExcelBtn?.addEventListener('click', ()=> openModal('modalExcel'));
+          openDriveBtn?.addEventListener('click', ()=> openModal('modalDrive'));
+
+          // Sheets config save
+          const sheetsUrlInput = document.getElementById('sheetsWebAppUrl');
+          const sheetEmbedInput = document.getElementById('sheetsEmbedUrl');
+          const btnSaveSheetsConfig = document.getElementById('btnSaveSheetsConfig');
+          try {
+            const w = localStorage.getItem('sheets.webapp.url'); if (w && sheetsUrlInput) sheetsUrlInput.value = w;
+            const e = localStorage.getItem('sheets.embed.url'); if (e && sheetEmbedInput) sheetEmbedInput.value = e;
+          } catch {}
+          btnSaveSheetsConfig?.addEventListener('click', ()=>{
+            try { const v = (sheetsUrlInput?.value||'').trim(); if (v) localStorage.setItem('sheets.webapp.url', v); } catch {}
+            try { const v = (sheetEmbedInput?.value||'').trim(); if (v) localStorage.setItem('sheets.embed.url', v); } catch {}
+            const frame = document.getElementById('sheetFrame');
+            const wrap = document.getElementById('sheetEmbedWrap');
+            if (frame) frame.src = (sheetEmbedInput?.value||'').trim() || getSheetEmbedUrl();
+            wrap?.classList.remove('hidden');
+            const toggle = document.getElementById('btnToggleSheet'); if (toggle) toggle.textContent = '📄 Hide Embedded Sheet';
+          });
+
+          // Drive folder save
+          const driveFolderInput = document.getElementById('driveFolderId');
+          const btnSaveDriveFolder = document.getElementById('btnSaveDriveFolder');
+          try { const f = localStorage.getItem('drive.folderId'); if (f && driveFolderInput) driveFolderInput.value = f; } catch {}
+          btnSaveDriveFolder?.addEventListener('click', ()=>{
+            try { const v = (driveFolderInput?.value||'').trim(); if (v) localStorage.setItem('drive.folderId', v); } catch {}
+          });
+
+          // Drive Picker (server-backed)
+          const btnDriveRoot = document.getElementById('btnDriveRoot');
+          const btnDriveUp = document.getElementById('btnDriveUp');
+          const driveSearch = document.getElementById('driveSearch');
+          const btnDriveSearch = document.getElementById('btnDriveSearch');
+          const driveList = document.getElementById('driveFolderList');
+          const driveCrumbs = document.getElementById('driveBreadcrumbs');
+          const btnChooseFolder = document.getElementById('btnChooseDriveFolder');
+          const pathStack = [{ id: 'root', name: 'My Drive' }];
+          let selectedFolder = localStorage.getItem('drive.folderId') || 'root';
+
+          function renderBreadcrumbs(){
+            driveCrumbs.textContent = pathStack.map(p=>p.name).join(' / ');
+          }
+          async function listFolders(folderId, q){
+            const url = new URL('/api/drive/browse', window.location.origin);
+            url.searchParams.set('folderId', folderId || 'root');
+            url.searchParams.set('type', 'folders');
+            if (q) url.searchParams.set('q', q);
+            const r = await fetch(url.toString());
+            if (!r.ok) throw new Error('HTTP '+r.status);
+            return await r.json();
+          }
+          function renderFolders(files){
+            driveList.innerHTML = '';
+            (files||[]).forEach(f=>{
+              const row = document.createElement('div');
+              row.className = 'flex items-center justify-between px-2 py-1 rounded hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer';
+              row.innerHTML = `<div>📁 ${escapeHtml(f.name||'')}</div><button class="text-xs underline">Open</button>`;
+              row.addEventListener('click', ()=> openFolder(f.id, f.name));
+              driveList.appendChild(row);
+            });
+            if (!files || !files.length) {
+              const empty = document.createElement('div'); empty.className='subtle text-sm'; empty.textContent='No folders found'; driveList.appendChild(empty);
+            }
+          }
+          async function refreshFolder(q){
+            try{
+              renderBreadcrumbs();
+              const cur = pathStack[pathStack.length-1];
+              const data = await listFolders(cur.id, q);
+              renderFolders(data.files);
+            } catch(e){ console.error(e); const empty = document.createElement('div'); empty.className='subtle text-sm'; empty.textContent='Drive browse failed'; driveList.innerHTML=''; driveList.appendChild(empty); }
+          }
+          function openFolder(id, name){ pathStack.push({ id, name: name||id }); refreshFolder(); }
+          function upFolder(){ if (pathStack.length>1) { pathStack.pop(); refreshFolder(); } }
+          btnDriveRoot?.addEventListener('click', ()=>{ pathStack.splice(0, pathStack.length, { id:'root', name:'My Drive' }); refreshFolder(); });
+          btnDriveUp?.addEventListener('click', upFolder);
+          btnDriveSearch?.addEventListener('click', ()=> refreshFolder((driveSearch?.value||'').trim()));
+          if (openDriveBtn) { openDriveBtn.addEventListener('click', ()=> setTimeout(refreshFolder, 50)); }
+          btnChooseFolder?.addEventListener('click', ()=>{
+            const cur = pathStack[pathStack.length-1];
+            selectedFolder = cur.id;
+            try { localStorage.setItem('drive.folderId', selectedFolder); if (driveFolderInput) driveFolderInput.value = selectedFolder; } catch {}
+            setStatus('Folder selected ✓');
+            closeAll();
+          });
+
+          // Slack
+          const slackChannel = document.getElementById('slackChannel');
+          const slackMessage = document.getElementById('slackMessage');
+          const slackSend = document.getElementById('btnSlackSend');
+          const slackDigest = document.getElementById('btnSlackDailyDigest');
+          const slackStatus = document.getElementById('slackStatus');
+          function setSlackStatus(s, err){ if (slackStatus) { slackStatus.textContent = s; slackStatus.className = `text-sm ${err?'text-red-500':'text-gray-500'}`; } }
+          slackSend?.addEventListener('click', async ()=>{
+            try {
+              setSlackStatus('Sending…');
+              const channel = (slackChannel?.value||'').trim();
+              const text = (slackMessage?.value||'').trim();
+              const r = await fetch('/api/slack/post', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ channel, text }) });
+              if(!r.ok) throw new Error('HTTP '+r.status);
+              setSlackStatus('Sent ✓');
+            } catch(e){ console.error(e); setSlackStatus('Slack send failed', true); }
+          });
+          slackDigest?.addEventListener('click', async ()=>{
+            try {
+              const today = new Date().toISOString().slice(0,10);
+              const dueToday = (window.TASKS||[]).filter(t=>t.dueDate===today);
+              const lines = dueToday.map(t=>`• ${t.title} — ${t.assignee||''}`);
+              const text = `Daily Digest (${today})\nTasks due today (${dueToday.length}):\n${lines.join('\n')}`;
+              setSlackStatus('Sending digest…');
+              const channel = (slackChannel?.value||'').trim();
+              const r = await fetch('/api/slack/post', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ channel, text }) });
+              if(!r.ok) throw new Error('HTTP '+r.status);
+              setSlackStatus('Digest sent ✓');
+            } catch(e){ console.error(e); setSlackStatus('Digest failed', true); }
+          });
+
+          // Email
+          const emailTo = document.getElementById('emailTo');
+          const emailSubject = document.getElementById('emailSubject');
+          const emailHtml = document.getElementById('emailHtml');
+          const emailSend = document.getElementById('btnEmailSend');
+          const emailDigest = document.getElementById('btnEmailDailyDigest');
+          const emailStatus = document.getElementById('emailStatus');
+          function setEmailStatus(s, err){ if (emailStatus) { emailStatus.textContent = s; emailStatus.className = `text-sm ${err?'text-red-500':'text-gray-500'}`; } }
+          emailSend?.addEventListener('click', async ()=>{
+            try {
+              setEmailStatus('Sending…');
+              const to = (emailTo?.value||'').trim();
+              const subject = (emailSubject?.value||'CSM Dashboard Notification').trim();
+              const html = (emailHtml?.value||'<p>Hello</p>');
+              const r = await fetch('/api/email/send', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ to, subject, html }) });
+              if(!r.ok) throw new Error('HTTP '+r.status);
+              setEmailStatus('Sent ✓');
+            } catch(e){ console.error(e); setEmailStatus('Email send failed', true); }
+          });
+          emailDigest?.addEventListener('click', async ()=>{
+            try {
+              setEmailStatus('Sending digest…');
+              const today = new Date().toISOString().slice(0,10);
+              const dueToday = (window.TASKS||[]).filter(t=>t.dueDate===today);
+              const rows = dueToday.map(t=>`<tr><td>${escapeHtml(t.title||'')}</td><td>${escapeHtml(t.assignee||'')}</td></tr>`).join('');
+              const html = `<h3>Daily Digest (${today})</h3><p>Tasks due today: ${dueToday.length}</p><table border="1" cellpadding="6"><tr><th>Task</th><th>Assignee</th></tr>${rows}</table>`;
+              const to = (emailTo?.value||'').trim();
+              const subject = (emailSubject?.value||'CSM Daily Digest').trim();
+              const r = await fetch('/api/email/send', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ to, subject, html }) });
+              if(!r.ok) throw new Error('HTTP '+r.status);
+              setEmailStatus('Digest sent ✓');
+            } catch(e){ console.error(e); setEmailStatus('Digest failed', true); }
+          });
+
+          // Slides
+          const slidesTemplateId = document.getElementById('slidesTemplateId');
+          const slidesExport = document.getElementById('btnSlidesExport');
+          const slidesImportId = document.getElementById('slidesImportId');
+          const slidesImport = document.getElementById('btnSlidesImport');
+          const slidesStatus = document.getElementById('slidesStatus');
+          function setSlidesStatus(s, err){ if (slidesStatus) { slidesStatus.textContent = s; slidesStatus.className = `text-sm ${err?'text-red-500':'text-gray-500'}`; } }
+          slidesExport?.addEventListener('click', async ()=>{
+            try {
+              setSlidesStatus('Creating deck…');
+              const templateId = (slidesTemplateId?.value||'').trim() || undefined;
+              const r = await fetch('/api/slides/export', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ title:'CSM Dashboard', accounts: window.ACCOUNTS||[], tasks: window.TASKS||[], templateId }) });
+              if(!r.ok) throw new Error('HTTP '+r.status);
+              const data = await r.json();
+              setSlidesStatus(`Created ✓ ${data.url}`);
+              if (data.url) window.open(data.url, '_blank');
+            } catch(e){ console.error(e); setSlidesStatus('Slides export failed', true); }
+          });
+          slidesImport?.addEventListener('click', async ()=>{
+            try {
+              const pid = (slidesImportId?.value||'').trim();
+              if (!pid) { setSlidesStatus('Enter a Presentation ID', true); return; }
+              setSlidesStatus('Importing accounts…');
+              const r = await fetch(`/api/slides/import?presentationId=${encodeURIComponent(pid)}`);
+              if(!r.ok) throw new Error('HTTP '+r.status);
+              const data = await r.json();
+              if (Array.isArray(data.accounts)) {
+                window.ACCOUNTS = data.accounts;
+                try { localStorage.setItem('csm.accounts', JSON.stringify(window.ACCOUNTS)); } catch {}
+                if (typeof renderTable==='function') renderTable();
+                if (typeof renderChartsPanel==='function') renderChartsPanel();
+                setSlidesStatus('Imported from Slides ✓');
+              } else {
+                setSlidesStatus('No accounts found in deck', true);
+              }
+            } catch(e){ console.error(e); setSlidesStatus('Slides import failed', true); }
+          });
+
+          function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c])); }
+        })();
+        </script>
+        
+</body>
+</html>

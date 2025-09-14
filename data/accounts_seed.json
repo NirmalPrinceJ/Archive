@@ -1,0 +1,46 @@
+[
+  {
+    "account": "Birkenstock",
+    "adoption": 82,
+    "css": 8.1,
+    "expertise": 4,
+    "vcoresProd": 10.2,
+    "vcoresPre": 18.8,
+    "envs": 5,
+    "renewal": "2026-03-15",
+    "risk": "Green"
+  },
+  {
+    "account": "CSL Seqirus",
+    "adoption": 74,
+    "css": 7.8,
+    "expertise": 3,
+    "vcoresProd": 14.0,
+    "vcoresPre": 20.0,
+    "envs": 4,
+    "renewal": "2025-12-01",
+    "risk": "Amber"
+  },
+  {
+    "account": "Gard",
+    "adoption": 68,
+    "css": 8.3,
+    "expertise": 5,
+    "vcoresProd": 19.9,
+    "vcoresPre": 50.6,
+    "envs": 7,
+    "renewal": "2026-06-30",
+    "risk": "Green"
+  },
+  {
+    "account": "Wates",
+    "adoption": 49,
+    "css": 7.5,
+    "expertise": 2,
+    "vcoresProd": 12.0,
+    "vcoresPre": 22.5,
+    "envs": 3,
+    "renewal": "2025-11-15",
+    "risk": "Red"
+  }
+]

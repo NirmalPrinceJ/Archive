@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Birkenstock - Interactive Account Dashboard</title>
+  <link rel="icon" type="image/x-icon" href="https://www.salesforce.com/favicon.ico">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+      :root { color-scheme: light dark; }
+      body { font-family: 'Inter', sans-serif; background-color: #F7FAFC; color: #1F2937; }
+      .dark body, body.dark { background-color: #0B1220; color: #E5E7EB; }
+      .chart-container { position: relative; width: 100%; max-width: 720px; margin-left:auto; margin-right:auto; height: 320px; }
+      .card { background-color: white; border-radius: 0.75rem; box-shadow: 0 4px 10px rgba(0,0,0,.06); }
+      body.dark .card { background-color: #111827; box-shadow: 0 4px 10px rgba(0,0,0,.35); }
+      .kpi { display:flex; flex-direction:column; justify-content:center; align-items:center; padding:1.25rem; }
+      .chip { display:inline-block; padding: .35rem .7rem; border-radius: 999px; font-size:.75rem; border:1px solid rgba(0,0,0,.08); }
+      body.dark .chip { border-color: rgba(255,255,255,.15); }
+      .link-chip { text-decoration:none; position: relative; }
+      .link-chip:hover::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: -30px;
+        padding: 5px 10px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        border-radius: 4px;
+        font-size: 12px;
+        white-space: nowrap;
+        z-index: 10;
+      }
+      .link-chip:hover, .link-chip.active { background-color: #1F2937; color: #E5E7EB; }
+      body.dark .link-chip:hover, body.dark .link-chip.active { background-color: #111827; color: #E5E7EB; }
+      .grid-resp { display:grid; grid-template-columns:1fr; gap:1rem; }
+      @media(min-width:768px){ .grid-resp { grid-template-columns: repeat(3, 1fr); } }
+      .section-title { font-size:1.5rem; font-weight:700; margin-bottom:.5rem; }
+      .subtle { color:#6B7280; }
+      body.dark .subtle { color:#A1A1AA; }
+      .btn { border-radius:999px; padding:.6rem 1rem; font-weight:700; }
+      .btn-ghost { background:transparent; border:1px solid rgba(0,0,0,.1); }
+      body.dark .btn-ghost { border-color: rgba(255,255,255,.15); }
+      .embed { width:100%; min-height:480px; border:0; border-radius:12px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+      body.dark .embed { box-shadow: 0 2px 8px rgba(0,0,0,.25); }
+      .frame-container { padding: 24px; background: white; border-radius: 12px; margin: 20px 0; }
+      body.dark .frame-container { background: #111827; }
+    </style>
+
+</head>
+<body class="antialiased" id="pageBody">
+
+  <div class="container mx-auto p-4 md:p-8">
+    <header class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-3xl md:text-4xl font-extrabold">Birkenstock — Account Dashboard</h1>
+        <p class="subtle">Interactive overview of health, trends, and key resources.</p>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button id="darkToggle" class="btn btn-ghost">🌗 Theme</button>
+      </div>
+    </header>
+ <section class="mb-8">
+      <div class="flex flex-wrap gap-2">
+        <a class="chip link-chip" href="https://salesforce.okta.com/" target="_blank" data-tooltip="Access your Salesforce Okta dashboard">Okta Dashboard</a>
+        <a class="chip link-chip" href="https://salesforce.okta.com/app/UserHome" target="_blank" data-tooltip="Go to your Okta user home page">Okta User Home</a>
+        <a class="chip link-chip" href="https://sites.google.com/salesforce.com/agentspov/home" target="_blank" data-tooltip="View the Agentic Point of View site">Agentic POV Site</a>
+        <a class="chip link-chip" href="https://orgcs.lightning.force.com/lightning/r/cssf_Success_Overview__c/aBMHx0000000jejOAA/view" target="_blank" data-tooltip="Access OrgCS success overview">OrgCS</a>
+        <a class="chip link-chip" href="https://prod-uswest-c.online.tableau.com/#/site/salesforce/views/Product360/CustomerSummary" target="_blank" data-tooltip="View latest Product 360 dashboard">P360 (latest)</a>
+        <a class="chip link-chip" href="https://prod-uswest-c.online.tableau.com/#/site/salesforce/views/CustomerSuccessScorecard-Internal-PROD/Overview" target="_blank" data-tooltip="View latest Customer Success Score">CSS (latest)</a>
+        <a class="chip link-chip" href="https://orgcs.lightning.force.com/lightning/n/CSM_Workspace" target="_blank" data-tooltip="Access CSM workspace">CSM Workspace</a>
+        <a class="chip link-chip" href="https://docs.google.com/presentation/d/placeholder-birken-qbr/preview" target="_blank" data-tooltip="View the latest QBR presentation">Latest QBR Deck</a>
+        <a class="chip link-chip" href="https://drive.google.com/drive/folders/placeholder-birken-resources" target="_blank" data-tooltip="Access shared resources folder">Resources Folder</a>
+      </div>
+    </section>
+
+    <section id="kpis" class="mb-10">
+      <div class="grid-resp">
+        <div class="card kpi text-center">
+          <div class="section-title">Renewal Countdown</div>
+          <div class="text-5xl font-extrabold text-blue-500" id="renewalCountdown">--</div>
+          <div class="subtle mt-2">Days until 2026-03-15</div>
+        </div>
+        <div class="card kpi text-center">
+          <div class="section-title">CSS Overall</div>
+          <div class="text-5xl font-extrabold" id="cssScore">8.1</div>
+          <div class="subtle mt-2">Δ 0.1 vs prev (8.0)</div>
+        </div>
+        <div class="card kpi text-center">
+          <div class="section-title">Support Plan</div>
+          <div class="text-5xl font-extrabold text-green-500">Premier</div>
+          <div class="subtle mt-2">Growth focus</div>
+        </div>
+      </div>
+    </section>
+    <section class="mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="card p-4">
+          <h2 class="text-lg font-bold mb-3">Account Information</h2>
+          <div class="space-y-2">
+            <div><span class="font-semibold">CSM:</span> Primary CSM</div>
+            <div><span class="font-semibold">Role:</span> Lead CSM</div>
+            <div><span class="font-semibold">No. of Orgs:</span> 2</div>
+            <div><span class="font-semibold">Renewal Date:</span> 15-Mar-2026</div>
+            <div><span class="font-semibold">Time Allocation:</span> 30%</div>
+            <div><span class="font-semibold">AE:</span> EMEA Central</div>
+          </div>
+        </div>
+        
+        <div class="card p-4">
+          <h2 class="text-lg font-bold mb-3">Current Focus Areas</h2>
+          <div class="space-y-2">
+            <div class="flex items-start gap-2">
+              <span class="text-yellow-500">⭐</span>
+              <div>API ROI demonstration planning</div>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="text-yellow-500">⭐</span>
+              <div>Sandbox environment optimization</div>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="text-yellow-500">⭐</span>
+              <div>Expansion opportunity validation</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card p-4">
+          <h2 class="text-lg font-bold mb-3">Latest Cadence</h2>
+          <div class="space-y-2">
+            <div class="text-sm text-gray-500">Last Meeting: Sep 3, 2025</div>
+            <div class="font-semibold">Key Points:</div>
+            <ul class="list-disc pl-4 space-y-1 text-sm">
+              <li>API ROI demo planning in progress</li>
+              <li>Sandbox cleanup completed</li>
+              <li>Stakeholder alignment achieved</li>
+            </ul>
+            <div class="mt-3">
+              <div class="text-sm text-green-500 font-semibold">Growth Focus:</div>
+              <div class="text-sm">Positive CSS trend and expansion opportunities</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="timeline" class="mb-12">
+      <div class="section-title text-center">Recent Activity</div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4" id="timelineCards"></div>
+    </section>
+
+    <section id="charts" class="mb-12">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="card p-6">
+          <div class="section-title text-center">CSS Trend</div>
+          <div class="chart-container"><canvas id="cssTrend"></canvas></div>
+        </div>
+        <div class="card p-6">
+          <div class="section-title text-center">vCore Usage (CH1 vs CH2)</div>
+          <div class="chart-container"><canvas id="vcores"></canvas></div>
+        </div>
+        <div class="card p-6">
+          <div class="section-title text-center">API Landscape</div>
+          <div class="chart-container"><canvas id="apiLandscape"></canvas></div>
+        </div>
+        <div class="card p-6">
+          <div class="section-title text-center">Product Adoption & Technical Expertise</div>
+          <div class="chart-container"><canvas id="productAdoption"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+   
+
+    <section id="ai" class="mb-16">
+      <div class="section-title text-center">AI Shortcuts</div>
+      <div class="card p-4">
+        <p class="subtle mb-3">Copy these prompts into Gemini / ChatGPT with this dashboard and the account’s Resources folder attached.</p>
+        <ul class="list-disc pl-5 space-y-2">
+          <li><strong>Portfolio Pulse:</strong> “Summarize CSS and vCore deltas for Birkenstock from the last two P360 and CSS reports. Flag any declines & propose next steps.”</li>
+          <li><strong>QBR Prep:</strong> “Create a 5-slide exec brief for Birkenstock covering CSS trend, vCore usage, API landscape, and top 3 risks/opportunities.”</li>
+          <li><strong>Agentic POV:</strong> “From reports, meetings, and slides, list top automation/API opportunities for Birkenstock with estimated impact and owners.”</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // Track active tab for visual feedback only
+    document.querySelectorAll('.link-chip').forEach(link => {
+      link.addEventListener('click', function() {
+        document.querySelectorAll('.link-chip').forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+      });
+    });
+    const CONFIG = {"renewal": "2026-03-15", "css": {"labels": ["Q4-24", "Q1-25", "Q2-25", "Q3-25"], "data": [8.0, 7.9, 8.2, 8.1]}, "vcores": [10.2, 18.8, 0.0, 0.0], "api_counts": [72, 140], "product_adoption": {"categories": ["API Dev", "Monitoring", "Security", "Testing", "Documentation"], "scores": [80, 75, 85, 70, 80]}, "timeline": [{"date": "2025-09-03", "title": "Quarterly Review", "note": "Expansion opportunities validated; API ROI demo planned."}, {"date": "2025-08-19", "title": "Sandbox Cleanup", "note": "Retired deprecated runtimes; reduced noise."}, {"date": "2025-08-05", "title": "Stakeholder Map", "note": "Aligned AE, CSM, Architect on plan."}]};
+
+    const body = document.getElementById('pageBody');
+    document.getElementById('darkToggle').addEventListener('click', () => body.classList.toggle('dark'));
+
+    function daysUntil(dateStr){
+      const target = new Date(dateStr);
+      const now = new Date();
+      const diff = Math.ceil((target - now)/(1000*60*60*24));
+      return Math.max(diff, 0);
+    }
+    document.getElementById('renewalCountdown').textContent = daysUntil(CONFIG.renewal);
+
+    const cssCtx = document.getElementById('cssTrend').getContext('2d');
+    new Chart(cssCtx, {
+      type: 'line',
+      data: { labels: CONFIG.css.labels, datasets: [{ label: 'CSS', data: CONFIG.css.data, borderColor: '#3B82F6', backgroundColor: 'rgba(59,130,246,.1)', fill:true, tension:.2 }]},
+      options: { responsive:true, maintainAspectRatio:false }
+    });
+
+    const vcoreCtx = document.getElementById('vcores').getContext('2d');
+    new Chart(vcoreCtx, {
+      type: 'bar',
+      data: { labels: ['CH 1.0 Prod','CH 1.0 Pre-Prod','CH 2.0 Prod','CH 2.0 Pre-Prod'],
+              datasets:[{ label:'vCores Used', data: CONFIG.vcores, backgroundColor:['#10B981','#60A5FA','#F59E0B','#EF4444'] }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}
+    });
+
+    const apiCtx = document.getElementById('apiLandscape').getContext('2d');
+    new Chart(apiCtx, {
+      type:'bar',
+      data:{ labels:['Production APIs','Pre-Production APIs'],
+             datasets:[{ data: CONFIG.api_counts, backgroundColor:['#6366F1','#94A3B8'] }]},
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{beginAtZero:true}}}
+    });
+
+    const productAdoptionCtx = document.getElementById('productAdoption').getContext('2d');
+    new Chart(productAdoptionCtx, {
+      type: 'radar',
+      data: {
+        labels: CONFIG.product_adoption.categories,
+        datasets: [{
+          label: 'Expertise Level',
+          data: CONFIG.product_adoption.scores,
+          backgroundColor: 'rgba(59,130,246,0.2)',
+          borderColor: '#3B82F6',
+          pointBackgroundColor: '#3B82F6',
+          pointBorderColor: '#fff',
+          pointHoverBackgroundColor: '#fff',
+          pointHoverBorderColor: '#3B82F6'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          r: {
+            angleLines: { display: true },
+            suggestedMin: 0,
+            suggestedMax: 100
+          }
+        }
+      }
+    });
+
+    const tl = document.getElementById('timelineCards');
+    CONFIG.timeline.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'card p-4';
+      div.innerHTML = `<div class="text-blue-500 text-sm">${item.date}</div>
+                       <div class="font-bold text-lg">${item.title}</div>
+                       <div class="subtle">${item.note}</div>`;
+      tl.appendChild(div);
+    });
+  </script>
+</body>
+</html>
