@@ -50,7 +50,7 @@
                     <button id="openSlides" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Google Slides</button>
                     <div class="border-t my-1 dark:border-gray-700"></div>
                     <button id="openSheets" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Google Sheets</button>
-                    <button id="openExcel" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Excel</button>
+                    <a href="https://docs.google.com/spreadsheets/d/placeholder-sheet-id/edit" target="_blank" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Project Sheet</a>
                     <button id="openDrive" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Google Drive</button>
                   </div>
                 </div>
@@ -109,31 +109,6 @@
             </div>
           </div>
         </div>
-        <!-- Excel Modal -->
-        <div id="modalExcel" class="hidden fixed inset-0 z-40 flex items-center justify-center">
-          <div class="bg-white dark:bg-gray-900 rounded-lg p-6 w-full max-w-xl shadow-xl">
-            <div class="flex items-center justify-between mb-3">
-              <div class="font-bold text-lg">Excel</div>
-              <button data-close="modalExcel" class="btn btn-ghost">✖︎</button>
-            </div>
-            <div class="space-y-3">
-              <div class="flex gap-2 flex-wrap">
-                <button id="btnImportExcel" class="px-3 py-2 rounded-lg border bg-white hover:bg-gray-50">⬇️ Import from Excel</button>
-                <button id="btnExportExcel" class="px-3 py-2 rounded-lg border bg-white hover:bg-gray-50">⬆️ Export to Excel</button>
-                <button id="btnToggleExcel" class="px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">📊 Show Embedded Excel</button>
-              </div>
-              <div>
-                <label class="text-sm subtle">Excel Online Embed URL</label>
-                <div class="flex gap-2">
-                  <input id="excelEmbedUrl" type="url" class="border rounded px-2 py-2 w-full" placeholder="Paste Excel Online embed URL" />
-                  <button id="btnSaveExcelUrl" class="px-3 py-2 rounded-lg border bg-white hover:bg-gray-50">💾 Save</button>
-                </div>
-              </div>
-              <input id="fileExcel" type="file" accept=".xlsx,.xls" class="hidden" />
-              <div id="excelStatus" class="text-sm text-gray-500"></div>
-            </div>
-          </div>
-        </div>
         <!-- Drive Modal -->
         <div id="modalDrive" class="hidden fixed inset-0 z-40 flex items-center justify-center">
           <div class="bg-white dark:bg-gray-900 rounded-lg p-6 w-full max-w-xl shadow-xl">
@@ -164,7 +139,7 @@
                 </div>
               </div>
               <div class="flex gap-2 flex-wrap">
-                <button id="btnUploadExcelDrive" class="px-3 py-2 rounded-lg border bg-white hover:bg-gray-50">☁️ Upload Excel</button>
+                
                 <button id="btnUploadJsonDrive" class="px-3 py-2 rounded-lg border bg-white hover:bg-gray-50">☁️ Upload JSON</button>
               </div>
               <div id="driveStatus" class="text-sm text-gray-500"></div>
@@ -216,10 +191,7 @@
             <iframe id="sheetFrame" src="" width="100%" height="480" style="border:0;"></iframe>
         </div>
 
-        <!-- Collapsible embedded Excel (OneDrive/SharePoint) -->
-        <div id="excelEmbedWrap" class="hidden rounded-xl border overflow-hidden mt-3">
-            <iframe id="excelFrame" src="" width="100%" height="480" style="border:0;"></iframe>
-        </div>
+        
 
 
     <div class="flex flex-col gap-8 w-full">
@@ -322,8 +294,6 @@
                                             </section>
     </div>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <!-- SheetJS for Excel import/export -->
-        <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
         <script>
         // --- Table-first, Charts-on-demand controller ---
         // Data for table and charts (will be replaced by live data)
@@ -1002,180 +972,9 @@
         })();
         </script>
 
-        <!-- Excel Integration (Embed + Import/Export) -->
-        <script>
-        (function excelIntegration(){
-          const elImport = document.getElementById('btnImportExcel');
-          const elExport = document.getElementById('btnExportExcel');
-          const elUploadExcel = document.getElementById('btnUploadExcelDrive');
-          const elUploadJson  = document.getElementById('btnUploadJsonDrive');
-          const elToggle = document.getElementById('btnToggleExcel');
-          const elUrl    = document.getElementById('excelEmbedUrl');
-          const elSave   = document.getElementById('btnSaveExcelUrl');
-          const elWrap   = document.getElementById('excelEmbedWrap');
-          const elFrame  = document.getElementById('excelFrame');
-          const elFile   = document.getElementById('fileExcel');
-          const elStat   = document.getElementById('excelStatus');
+        
 
-          const URL_KEY = 'excel.embed.url';
-          const DRIVE_FOLDER_KEY = 'drive.folderId';
-          try { const saved = localStorage.getItem(URL_KEY); if (saved && elUrl) { elUrl.value = saved; if (elFrame && !elFrame.src) elFrame.src = saved; } } catch {}
-
-          function setStatus(msg, err){
-            if(elStat){ elStat.textContent = msg; elStat.className = `text-sm ${err?'text-red-500':'text-gray-500'} ml-2`; }
-            const driveStat = document.getElementById('driveStatus');
-            if (driveStat) { driveStat.textContent = msg; driveStat.className = `text-sm ${err?'text-red-500':'text-gray-500'}`; }
-          }
-
-          elSave?.addEventListener('click', ()=>{
-            const url = (elUrl?.value||'').trim();
-            if(!url){ setStatus('Provide a valid Excel embed URL', true); return; }
-            try { localStorage.setItem(URL_KEY, url); } catch {}
-            if (elFrame) elFrame.src = url;
-            elWrap?.classList.remove('hidden');
-            if (elToggle) elToggle.textContent = '📊 Hide Embedded Excel';
-            setStatus('Excel embed URL saved ✓');
-          });
-
-          elToggle?.addEventListener('click', ()=>{
-            const nowHidden = elWrap?.classList.toggle('hidden');
-            if (elToggle) elToggle.textContent = nowHidden ? '📊 Show Embedded Excel' : '📊 Hide Embedded Excel';
-          });
-
-          elImport?.addEventListener('click', ()=> elFile?.click());
-          elFile?.addEventListener('change', async (e)=>{
-            const file = e.target.files && e.target.files[0];
-            if(!file){ return; }
-            setStatus('Reading Excel…');
-            try {
-              const buf = await file.arrayBuffer();
-              const wb = XLSX.read(buf, { type:'array' });
-              // Accounts sheet
-              const accSheetName = wb.SheetNames.find(n=>/accounts?/i.test(n)) || wb.SheetNames[0];
-              const accRows = XLSX.utils.sheet_to_json(wb.Sheets[accSheetName]||{}, { defval:'' });
-              if (accRows && accRows.length){ window.ACCOUNTS = accRows.map(mapAccountRow); try { localStorage.setItem('csm.accounts', JSON.stringify(window.ACCOUNTS)); } catch {} }
-              // Tasks sheet (optional)
-              const tasksName = wb.SheetNames.find(n=>/tasks?/i.test(n));
-              if (tasksName){
-                const tRows = XLSX.utils.sheet_to_json(wb.Sheets[tasksName]||{}, { defval:'' });
-                window.TASKS = tRows.map(mapTaskRow);
-                try { localStorage.setItem('csm.tasks', JSON.stringify(window.TASKS)); } catch {}
-              }
-              if (typeof renderTable==='function') renderTable(window.CURRENT_FILTER||'all');
-              if (typeof renderChartsPanel==='function') renderChartsPanel();
-              // Re-render tasks if our dynamic tracker is active
-              try { if (typeof window.dispatchEvent==='function'){ window.dispatchEvent(new Event('tasks:reload')); } } catch {}
-              setStatus('Excel imported ✓');
-            } catch(err){ console.error(err); setStatus('Excel import failed', true); }
-          });
-
-          elExport?.addEventListener('click', ()=>{
-            try {
-              const wb = XLSX.utils.book_new();
-              // Accounts
-              const accs = Array.isArray(window.ACCOUNTS)? window.ACCOUNTS : [];
-              const accRows = accs.map(a=>({
-                account:a.account||a.name||'', adoption:a.adoption??a.adoptionPct??'', css:a.css??a.cssScore??'',
-                expertise:a.expertise??a.technicalExpertise??'', vcoresProd:a.vcoresProd??'', vcoresPre:a.vcoresPre??a.vcoresPreProd??'',
-                envs:a.envs??(Array.isArray(a.environments)?a.environments.length: a.environments||''), renewal:a.renewal||a.renewalDate||'', risk:a.risk||a.renewalRisk||''
-              }));
-              const wsA = XLSX.utils.json_to_sheet(accRows);
-              XLSX.utils.book_append_sheet(wb, wsA, 'Accounts');
-              // Tasks
-              const tasks = Array.isArray(window.TASKS)? window.TASKS : [];
-              const taskRows = tasks.map(t=>({ title:t.title||'', dueDate:t.dueDate||'', priority:t.priority||t.status||'', assignee:t.assignee||'', done: !!t.done }));
-              const wsT = XLSX.utils.json_to_sheet(taskRows);
-              XLSX.utils.book_append_sheet(wb, wsT, 'Tasks');
-              XLSX.writeFile(wb, 'dashboard_export.xlsx');
-              setStatus('Excel exported ✓');
-            } catch(err){ console.error(err); setStatus('Excel export failed', true); }
-          });
-
-          elUploadExcel?.addEventListener('click', async ()=>{
-            try {
-              const wb = XLSX.utils.book_new();
-              const accs = Array.isArray(window.ACCOUNTS)? window.ACCOUNTS : [];
-              const accRows = accs.map(a=>({
-                account:a.account||a.name||'', adoption:a.adoption??a.adoptionPct??'', css:a.css??a.cssScore??'',
-                expertise:a.expertise??a.technicalExpertise??'', vcoresProd:a.vcoresProd??'', vcoresPre:a.vcoresPre??a.vcoresPreProd??'',
-                envs:a.envs??(Array.isArray(a.environments)?a.environments.length: a.environments||''), renewal:a.renewal||a.renewalDate||'', risk:a.risk||a.renewalRisk||''
-              }));
-              const wsA = XLSX.utils.json_to_sheet(accRows);
-              XLSX.utils.book_append_sheet(wb, wsA, 'Accounts');
-              const tasks = Array.isArray(window.TASKS)? window.TASKS : [];
-              const taskRows = tasks.map(t=>({ title:t.title||'', dueDate:t.dueDate||'', priority:t.priority||t.status||'', assignee:t.assignee||'', done: !!t.done }));
-              const wsT = XLSX.utils.json_to_sheet(taskRows);
-              XLSX.utils.book_append_sheet(wb, wsT, 'Tasks');
-
-              const arrbuf = XLSX.write(wb, { bookType:'xlsx', type:'array' });
-              const b64 = arrayBufferToBase64(arrbuf);
-              const folderId = getDriveFolderId();
-              setStatus('Uploading to Drive…');
-              const resp = await fetch('/api/drive/upload', {
-                method:'POST', headers:{ 'Content-Type':'application/json' },
-                body: JSON.stringify({ name:`dashboard_export_${new Date().toISOString().slice(0,10)}.xlsx`, mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', contentBase64:b64, folderId })
-              });
-              if(!resp.ok) throw new Error('HTTP '+resp.status);
-              setStatus('Uploaded Excel to Drive ✓');
-            } catch(err){ console.error(err); setStatus('Drive upload failed', true); }
-          });
-
-          elUploadJson?.addEventListener('click', async ()=>{
-            try {
-              const folderId = getDriveFolderId();
-              setStatus('Uploading JSON to Drive…');
-              const resp = await fetch('/api/drive/export-json', {
-                method:'POST', headers:{ 'Content-Type':'application/json' },
-                body: JSON.stringify({ accounts: window.ACCOUNTS||[], tasks: window.TASKS||[], folderId })
-              });
-              if(!resp.ok) throw new Error('HTTP '+resp.status);
-              setStatus('Uploaded JSON to Drive ✓');
-            } catch(err){ console.error(err); setStatus('Drive upload failed', true); }
-          });
-
-          function getDriveFolderId(){
-            try { const saved = localStorage.getItem(DRIVE_FOLDER_KEY); if (saved) return saved; } catch {}
-            const id = prompt('Google Drive folder ID to upload into (saved locally):', '') || '';
-            try { if (id) localStorage.setItem(DRIVE_FOLDER_KEY, id); } catch {}
-            return id || undefined;
-          }
-
-          function arrayBufferToBase64(buf){
-            let binary='';
-            const bytes = new Uint8Array(buf);
-            const step = 0x8000;
-            for (let i=0;i<bytes.length;i+=step){ binary += String.fromCharCode.apply(null, bytes.subarray(i, i+step)); }
-            return btoa(binary);
-          }
-
-          function mapAccountRow(r){
-            return {
-              account: r.account||r.Account||r.name||'',
-              adoption: Number(r.adoption ?? r.Adoption ?? r.adoptionPct ?? r.AdoptionPct ?? 0),
-              css: Number(r.css ?? r.CSS ?? r.cssScore ?? 0),
-              expertise: Number(r.expertise ?? r.Expertise ?? r.technicalExpertise ?? 0),
-              vcoresProd: Number(r.vcoresProd ?? r.Prod ?? 0),
-              vcoresPre: Number(r.vcoresPre ?? r.vcoresPreProd ?? r.PreProd ?? 0),
-              envs: Number(r.envs ?? r.Environments ?? r.environmentsCount ?? (Array.isArray(r.environments)?r.environments.length: 0)),
-              renewal: r.renewal || r.Renewal || r.renewalDate || '',
-              risk: r.risk || r.Risk || r.renewalRisk || 'Green'
-            };
-          }
-
-          function mapTaskRow(r){
-            return {
-              id: String(r.id||'').trim() || crypto.getRandomValues(new Uint32Array(1))[0].toString(36),
-              title: r.title || r.Task || r.task || '',
-              dueDate: (r.dueDate || r.Due || '').toString().slice(0,10),
-              priority: r.priority || r.Priority || r.status || '',
-              assignee: r.assignee || r.Assignee || '',
-              done: r.done===true || String(r.done||'').toLowerCase()==='true' || String(r.status||'').toLowerCase()==='done'
-            };
-          }
-        })();
-        </script>
-
-        <!-- Integrations: Slack, Email, Slides, Sheets, Excel, Drive -->
+        <!-- Integrations: Slack, Email, Slides, Sheets, Drive -->
         <script>
         (function integrations(){
           // Dropdown and Modal wiring
@@ -1186,14 +985,14 @@
           const openEmailBtn = document.getElementById('openEmail');
           const openSlidesBtn = document.getElementById('openSlides');
           const openSheetsBtn = document.getElementById('openSheets');
-          const openExcelBtn  = document.getElementById('openExcel');
+          
           const openDriveBtn  = document.getElementById('openDrive');
           const modals = {
             modalSlack: document.getElementById('modalSlack'),
             modalEmail: document.getElementById('modalEmail'),
             modalSlides: document.getElementById('modalSlides'),
             modalSheets: document.getElementById('modalSheets'),
-            modalExcel: document.getElementById('modalExcel'),
+            
             modalDrive: document.getElementById('modalDrive')
           };
           function closeAll(){ Object.values(modals).forEach(m=>m?.classList.add('hidden')); overlay?.classList.add('hidden'); }
@@ -1209,11 +1008,13 @@
           openEmailBtn?.addEventListener('click', ()=> openModal('modalEmail'));
           openSlidesBtn?.addEventListener('click', ()=> openModal('modalSlides'));
           openSheetsBtn?.addEventListener('click', ()=> openModal('modalSheets'));
-          openExcelBtn?.addEventListener('click', ()=> openModal('modalExcel'));
+          
           openDriveBtn?.addEventListener('click', ()=> openModal('modalDrive'));
 
           // Sheets config save
           const sheetsUrlInput = document.getElementById('sheetsWebAppUrl');
+
+
           const sheetEmbedInput = document.getElementById('sheetsEmbedUrl');
           const btnSaveSheetsConfig = document.getElementById('btnSaveSheetsConfig');
           try {
@@ -1236,6 +1037,23 @@
           try { const f = localStorage.getItem('drive.folderId'); if (f && driveFolderInput) driveFolderInput.value = f; } catch {}
           btnSaveDriveFolder?.addEventListener('click', ()=>{
             try { const v = (driveFolderInput?.value||'').trim(); if (v) localStorage.setItem('drive.folderId', v); } catch {}
+          });
+
+          // Drive upload JSON (Sheets-only mode)
+          const btnUploadJson = document.getElementById('btnUploadJsonDrive');
+          const driveStatus = document.getElementById('driveStatus');
+          function setDriveStatus(s, err){ if (driveStatus) { driveStatus.textContent = s; driveStatus.className = `text-sm ${err?'text-red-500':'text-gray-500'}`; } }
+          btnUploadJson?.addEventListener('click', async ()=>{
+            try {
+              setDriveStatus('Uploading JSON to Drive…');
+              const folderId = (localStorage.getItem('drive.folderId')||'') || undefined;
+              const resp = await fetch('/api/drive/export-json', {
+                method:'POST', headers:{ 'Content-Type':'application/json' },
+                body: JSON.stringify({ accounts: window.ACCOUNTS||[], tasks: window.TASKS||[], folderId })
+              });
+              if(!resp.ok) throw new Error('HTTP '+resp.status);
+              setDriveStatus('Uploaded JSON to Drive ✓');
+            } catch(e){ console.error(e); setDriveStatus('Drive upload failed', true); }
           });
 
           // Drive Picker (server-backed)
