@@ -791,32 +791,67 @@
                 isHidden ? '📄 Hide Embedded Sheet' : '📄 Show Embedded Sheet';
         });
 
-        // Import from Google Sheets
+        // Import from Google Sheets (supports both old and new Apps Script backends)
         document.getElementById('btnLoadFromSheets').addEventListener('click', async () => {
             sheetsUI.setStatus('Importing data...');
+            const base = getSheetsWebAppUrl();
             try {
-                const url = new URL(getSheetsWebAppUrl());
-                url.searchParams.set('what', 'load');
-                const res = await fetch(url.toString());
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                const data = await res.json();
-                const rows = Array.isArray(data.accounts) ? data.accounts : Array.isArray(data) ? data : [];
-                // Try to map common field names to current table schema
-                window.ACCOUNTS = rows.map(r=>({
-                    account: r.account || r.name || r.Account || '',
-                    adoption: Number(r.adoption ?? r.adoptionPct ?? r.Adoption ?? 0),
-                    css: Number(r.css ?? r.cssScore ?? r.CSS ?? 0),
+                async function fetchJSON(u){ const r = await fetch(u); if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }
+                let accounts = [];
+                let tasks = [];
+
+                // Try new endpoints first: ?api=accounts and ?api=tasks
+                try {
+                    const accUrl = new URL(base); accUrl.searchParams.set('api','accounts');
+                    const rawAcc = await fetchJSON(accUrl.toString());
+                    if (Array.isArray(rawAcc)) accounts = rawAcc; else if (rawAcc && typeof rawAcc==='object') accounts = Object.values(rawAcc);
+                } catch {}
+                try {
+                    const tUrl = new URL(base); tUrl.searchParams.set('api','tasks');
+                    const rawTasks = await fetchJSON(tUrl.toString());
+                    if (Array.isArray(rawTasks)) tasks = rawTasks; else if (rawTasks && typeof rawTasks==='object') tasks = Object.values(rawTasks);
+                } catch {}
+
+                // Fallback to legacy ?what=load returning {accounts:[...]}
+                if (!accounts.length) {
+                    try {
+                        const legacy = await fetchJSON(new URL(base+ (base.includes('?')?'&':'?') + 'what=load').toString());
+                        accounts = Array.isArray(legacy?.accounts)? legacy.accounts : Array.isArray(legacy)? legacy : [];
+                        tasks = Array.isArray(legacy?.tasks)? legacy.tasks : tasks;
+                    } catch {}
+                }
+
+                // Map accounts into table schema
+                window.ACCOUNTS = (accounts||[]).map(r=>({
+                    account: r.account || r.name || r['Account Name'] || r.Account || '',
+                    adoption: Number(r.adoption ?? r.adoptionPct ?? r.Adoption ?? r['Adoption %'] ?? 0),
+                    css: Number(r.css ?? r.cssScore ?? r.CSS ?? r['CSS Score'] ?? 0),
                     expertise: Number(r.expertise ?? r.technicalExpertise ?? r.Expertise ?? 0),
-                    vcoresProd: Number(r.vcoresProd ?? r.Prod ?? 0),
-                    vcoresPre: Number(r.vcoresPre ?? r.vcoresPreProd ?? r.PreProd ?? 0),
-                    envs: Number(r.envs ?? r.environmentsCount ?? r.Environments ?? 0),
-                    renewal: r.renewal || r.renewalDate || r.Renewal || '',
-                    risk: r.risk || r.renewalRisk || r.Risk || 'Green'
+                    vcoresProd: Number(r.vcoresProd ?? r['vCore Prod'] ?? r.Prod ?? 0),
+                    vcoresPre: Number(r.vcoresPre ?? r['vCore Pre-Prod'] ?? r.vcoresPreProd ?? r.PreProd ?? 0),
+                    envs: Number(r.envs ?? r.environmentsCount ?? r.Environments ?? r['Org Count'] ?? 0),
+                    renewal: r.renewal || r.renewalDate || r['Renewal Date'] || r.Renewal || '',
+                    risk: r.risk || r.renewalRisk || r['Risk Level'] || r.Risk || 'Green'
                 }));
+                // Map tasks into tracker format
+                window.TASKS = (tasks||[]).map(t=>({
+                    id: t.id||t['Task ID']||t.TaskID||crypto.getRandomValues(new Uint32Array(1))[0].toString(36),
+                    title: t.title||t.Title||t.task||'',
+                    accountId: t.account||t.Account||'',
+                    dueDate: (t.dueDate||t['Due Date']||'').toString().slice(0,10),
+                    priority: t.priority||t.Priority||'',
+                    assignee: t.assignee||t.Assignee||'',
+                    status: t.status||t.Status||'Backlog',
+                    notes: t.notes||t.Description||''
+                }));
+
                 try { localStorage.setItem('csm.accounts', JSON.stringify(window.ACCOUNTS)); } catch {}
+                try { localStorage.setItem('csm.tasks', JSON.stringify(window.TASKS)); } catch {}
+
                 sheetsUI.setStatus('Data imported successfully!');
                 if (typeof renderTable === 'function') renderTable();
                 if (typeof renderChartsPanel === 'function') renderChartsPanel();
+                try { window.dispatchEvent(new Event('tasks:reload')); } catch {}
             } catch (err) {
                 sheetsUI.setStatus('Failed to import data', true);
                 console.error('Import error:', err);
@@ -861,28 +896,9 @@
             document.getElementById('btnLoadFromSheets')?.click();
         });
 
-        // Export to Google Sheets
+        // Export to Google Sheets (disabled for new GAS portal; edit directly in Sheets)
         document.getElementById('btnSaveToSheets').addEventListener('click', async () => {
-            sheetsUI.setStatus('Exporting data...');
-            try {
-                const url = new URL(getSheetsWebAppUrl());
-                url.searchParams.set('what', 'save');
-                const payload = {
-                    accounts: typeof serializeAccounts === 'function' ? serializeAccounts(window.ACCOUNTS) : (window.ACCOUNTS || []),
-                    timestamp: new Date().toISOString()
-                };
-                const res = await fetch(url.toString(), {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                await res.json().catch(()=>null);
-                sheetsUI.setStatus('Data exported successfully!');
-            } catch (err) {
-                sheetsUI.setStatus('Failed to export data', true);
-                console.error('Export error:', err);
-            }
+            alert('Direct export is disabled for the new Sheets portal. Edit data in the Google Sheets directly.');
         });
 
         // --- Existing logic for login, activity, tasks, etc. ---

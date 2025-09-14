@@ -2,15 +2,22 @@ Google Sheets JSON Backend (Google Apps Script)
 
 Overview
 - The dashboard fetches real-time data from a Google Apps Script Web App that reads a Google Sheet and returns JSON.
-- Use `backend/apps_script.gs` as the backend. Deploy it and paste the deployment URL into `SHEETS_WEBAPP_URL` in `Dashboard.html`.
+- You can choose between two backends:
+  - Option A (legacy): `backend/apps_script.gs` with `?what=load|seed|bootstrap` and POST save.
+  - Option B (portal): `backend/automation_quick_setup.gs` with `?api=accounts` and `?api=tasks`, plus a hosted portal.
 
-Steps
+Steps (Option A: legacy)
 - Create a Google Sheet with a first row of headers matching your columns, for example:
   - account, adoption, css, expertise, vcoresProd, vcoresPre, envs, renewal, risk
 - Open script.google.com → New project.
 - Paste the contents of `backend/apps_script.gs`.
 - Deploy → New deployment → Type: Web app → Execute as: Me → Who has access: Anyone with the link.
-- Copy the deployment URL and set it in `SHEETS_WEBAPP_URL` in `Dashboard.html`.
+- Copy the deployment URL and set it in `SHEETS_WEBAPP_URL` (Integrations → Google Sheets) in `Dashboard.html`.
+
+Steps (Option B: portal)
+- Create a new Apps Script project and paste your automation code based on `backend/automation_quick_setup.gs` (use your full version).
+- Run `quickSetupCSMDashboard()` once, copy config to your Configuration.gs as instructed, then deploy as Web App.
+- In `Dashboard.html`, paste the Web App URL into Integrations → Google Sheets (Web App URL). The dashboard will auto-call `?api=accounts` and `?api=tasks` on refresh.
 
 Create and preload automatically (no manual Sheet needed)
 - After deploying the Web App, open this URL in the browser:
