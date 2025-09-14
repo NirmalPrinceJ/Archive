@@ -4,7 +4,8 @@
 
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Wates - Interactive Account Dashboard</title>
+    <title>Gard - Interactive Account Dashboard</title>
+    <link rel="icon" type="image/x-icon" href="https://www.salesforce.com/favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,26 +16,14 @@
       body { font-family: 'Inter', sans-serif; background-color: #F7FAFC; color: #1F2937; }
       .dark body, body.dark { background-color: #0B1220; color: #E5E7EB; }
       .chart-container { position: relative; width: 100%; max-width: 720px; margin-left:auto; margin-right:auto; height: 320px; }
+      .iframe-container { position: relative; width: 100%; height: 100%; min-height: 600px; }
+      .iframe-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
       .card { background-color: white; border-radius: 0.75rem; box-shadow: 0 4px 10px rgba(0,0,0,.06); }
       body.dark .card { background-color: #111827; box-shadow: 0 4px 10px rgba(0,0,0,.35); }
       .kpi { display:flex; flex-direction:column; justify-content:center; align-items:center; padding:1.25rem; }
       .chip { display:inline-block; padding: .35rem .7rem; border-radius: 999px; font-size:.75rem; border:1px solid rgba(0,0,0,.08); }
       body.dark .chip { border-color: rgba(255,255,255,.15); }
-      .link-chip { text-decoration:none; position: relative; }
-      .link-chip:hover::after {
-        content: attr(data-tooltip);
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        bottom: -30px;
-        padding: 5px 10px;
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        border-radius: 4px;
-        font-size: 12px;
-        white-space: nowrap;
-        z-index: 10;
-      }
+      .link-chip { text-decoration:none; }
       .link-chip:hover, .link-chip.active { background-color: #1F2937; color: #E5E7EB; }
       body.dark .link-chip:hover, body.dark .link-chip.active { background-color: #111827; color: #E5E7EB; }
       .grid-resp { display:grid; grid-template-columns:1fr; gap:1rem; }
@@ -57,7 +46,7 @@
   <div class="container mx-auto p-4 md:p-8">
     <header class="flex items-center justify-between mb-8">
       <div>
-        <h1 class="text-3xl md:text-4xl font-extrabold">Wates — Account Dashboard</h1>
+        <h1 class="text-3xl md:text-4xl font-extrabold">Gard — Account Dashboard</h1>
         <p class="subtle">Interactive overview of health, trends, and key resources.</p>
       </div>
       <div class="flex items-center space-x-2">
@@ -65,19 +54,20 @@
       </div>
     </header>
 
-   
+    
 
     <section class="mb-8">
       <div class="flex flex-wrap gap-2">
-        <a class="chip link-chip" href="https://salesforce.okta.com/" target="_blank" data-tooltip="Access your Salesforce Okta dashboard">Okta Dashboard</a>
-        <a class="chip link-chip" href="https://salesforce.okta.com/app/UserHome" target="_blank" data-tooltip="Go to your Okta user home page">Okta User Home</a>
-        <a class="chip link-chip" href="https://sites.google.com/salesforce.com/agentspov/home" target="_blank" data-tooltip="View the Agentic Point of View site">Agentic POV Site</a>
-        <a class="chip link-chip" href="https://orgcs.lightning.force.com/lightning/r/cssf_Success_Overview__c/aBMHx0000001U5hOAE/view" target="_blank" data-tooltip="Access OrgCS success overview">OrgCS</a>
-        <a class="chip link-chip" href="https://drive.google.com/drive/folders/placeholder-wates-reports" target="_blank" data-tooltip="View latest Product 360 dashboard">P360 (latest)</a>
-        <a class="chip link-chip" href="https://drive.google.com/drive/folders/placeholder-wates-css" target="_blank" data-tooltip="View latest Customer Success Score">CSS (latest)</a>
-        <a class="chip link-chip" href="https://orgcs.lightning.force.com/lightning/n/CSM_Workspace" target="_blank" data-tooltip="Access CSM workspace">CSM Workspace</a>
-        <a class="chip link-chip" href="https://docs.google.com/presentation/d/placeholder-wates-qbr/preview" target="_blank" data-tooltip="View the latest QBR presentation">Latest QBR Deck</a>
-        <a class="chip link-chip" href="https://drive.google.com/drive/folders/placeholder-wates-resources" target="_blank" data-tooltip="Access shared resources folder">Resources Folder</a>
+        <a class="chip link-chip" href="https://salesforce.okta.com/" target="_blank">Okta Dashboard</a>
+        <a class="chip link-chip" href="https://salesforce.okta.com/app/UserHome" target="_blank">Okta User Home</a>
+        <a class="chip link-chip" href="https://sites.google.com/salesforce.com/gard-agentspov/home?pli=1" target="_blank">Agentic POV Site</a>
+        <a class="chip link-chip" href="https://salesforce.okta.com/home/salesforce_other/0oa1moszykHIgxlUY1t7/46" target="_blank">OrgCS</a>
+        <a class="chip link-chip" href="https://salesforce.okta.com/home/salesforce/0oa1kq6wmfnYAGRKW1t7/46?fromHome=true" target="_blank">P360 (latest)</a>
+        <a class="chip link-chip" href="https://salesforce.okta.com/home/salesforce/0oa1kq6wmfnYAGRKW1t7/46?fromHome=true" target="_blank">CSS (latest)</a>
+        <a class="chip link-chip" href="https://orgcs.lightning.force.com/lightning/n/CSM_Workspace" target="_blank">CSM Workspace</a>
+        <a class="chip link-chip" href="https://docs.google.com/presentation/d/placeholder-gard-qbr/preview" target="_blank">Latest QBR Deck</a>
+        <a class="chip link-chip" href="https://drive.google.com/drive/folders/1Ezzole4FPKzDr9EV4xlMyWvTkKcIvJ-v" target="_blank">Resources Folder</a>
+        <a class="chip link-chip" href="https://help.salesforce.com/s/support-cases" target="_blank">Cases</a>
       </div>
     </section>
 
@@ -86,31 +76,31 @@
         <div class="card kpi text-center">
           <div class="section-title">Renewal Countdown</div>
           <div class="text-5xl font-extrabold text-blue-500" id="renewalCountdown">--</div>
-          <div class="subtle mt-2">Days until 2026-01-13</div>
+          <div class="subtle mt-2">Days until 2026-12-19</div>
         </div>
         <div class="card kpi text-center">
           <div class="section-title">CSS Overall</div>
-          <div class="text-5xl font-extrabold" id="cssScore">7.1</div>
-          <div class="subtle mt-2">Δ -0.3 vs prev (7.4)</div>
+          <div class="text-5xl font-extrabold" id="cssScore">7.8</div>
+          <div class="subtle mt-2">Δ -0.5 vs prev (8.3)</div>
         </div>
         <div class="card kpi text-center">
           <div class="section-title">Support Plan</div>
-          <div class="text-5xl font-extrabold text-green-500">Premier</div>
-          <div class="subtle mt-2">Enhanced success plan</div>
+          <div class="text-5xl font-extrabold text-green-500">Signature</div>
+          <div class="subtle mt-2">Premium success plan</div>
         </div>
       </div>
     </section>
- <section class="mb-8">
+<section class="mb-8">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="card p-4">
           <h2 class="text-lg font-bold mb-3">Account Information</h2>
           <div class="space-y-2">
-            <div><span class="font-semibold">CSM:</span> Primary CSM</div>
-            <div><span class="font-semibold">Role:</span> Lead CSM</div>
+            <div><span class="font-semibold">CSM:</span> Karim Riffi Tonning</div>
+            <div><span class="font-semibold">Role:</span> Backup CSM</div>
             <div><span class="font-semibold">No. of Orgs:</span> 1</div>
-            <div><span class="font-semibold">Renewal Date:</span> 13-Jan-2026</div>
-            <div><span class="font-semibold">Time Allocation:</span> 15%</div>
-            <div><span class="font-semibold">AE:</span> EMEA UK</div>
+            <div><span class="font-semibold">Renewal Date:</span> 19-Dec-2026</div>
+            <div><span class="font-semibold">Time Allocation:</span> 20%</div>
+            <div><span class="font-semibold">AE:</span> EMEA North</div>
           </div>
         </div>
         
@@ -119,15 +109,15 @@
           <div class="space-y-2">
             <div class="flex items-start gap-2">
               <span class="text-yellow-500">⭐</span>
-              <div>CSS score improvement plan</div>
+              <div>Declining utilization: 21.5 to 16.5</div>
             </div>
             <div class="flex items-start gap-2">
               <span class="text-yellow-500">⭐</span>
-              <div>Enhanced success plan implementation</div>
+              <div>Whitespaces document preparation</div>
             </div>
             <div class="flex items-start gap-2">
               <span class="text-yellow-500">⭐</span>
-              <div>Support ticket optimization</div>
+              <div>RAW workshop coordination</div>
             </div>
           </div>
         </div>
@@ -135,16 +125,16 @@
         <div class="card p-4">
           <h2 class="text-lg font-bold mb-3">Latest Cadence</h2>
           <div class="space-y-2">
-            <div class="text-sm text-gray-500">Last Meeting: Sep 6, 2025</div>
+            <div class="text-sm text-gray-500">Last Meeting: Sep 5, 2025</div>
             <div class="font-semibold">Key Points:</div>
             <ul class="list-disc pl-4 space-y-1 text-sm">
-              <li>CSS decline analysis completed</li>
-              <li>Support ticket review scheduled</li>
-              <li>Success plan milestones defined</li>
+              <li>API analysis and adoption workshop planned</li>
+              <li>Need structured plan for past engagements</li>
+              <li>Follow-up on API analyzer results pending</li>
             </ul>
             <div class="mt-3">
-              <div class="text-sm text-yellow-500 font-semibold">Focus Area:</div>
-              <div class="text-sm">CSS improvement and support optimization</div>
+              <div class="text-sm text-red-500 font-semibold">Risk Alerts:</div>
+              <div class="text-sm">Declining KEY Aplatform usage and stalled automation</div>
             </div>
           </div>
         </div>
@@ -154,6 +144,7 @@
       <div class="section-title text-center">Recent Activity</div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4" id="timelineCards"></div>
     </section>
+
     <section id="charts" class="mb-12">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="card p-6">
@@ -176,22 +167,29 @@
     </section>
 
    
-
     <section id="ai" class="mb-16">
       <div class="section-title text-center">AI Shortcuts</div>
       <div class="card p-4">
         <p class="subtle mb-3">Copy these prompts into Gemini / ChatGPT with this dashboard and the account’s Resources folder attached.</p>
         <ul class="list-disc pl-5 space-y-2">
-          <li><strong>Portfolio Pulse:</strong> “Summarize CSS and vCore deltas for Wates from the last two P360 and CSS reports. Flag any declines & propose next steps.”</li>
-          <li><strong>QBR Prep:</strong> “Create a 5-slide exec brief for Wates covering CSS trend, vCore usage, API landscape, and top 3 risks/opportunities.”</li>
-          <li><strong>Agentic POV:</strong> “From reports, meetings, and slides, list top automation/API opportunities for Wates with estimated impact and owners.”</li>
+          <li><strong>Portfolio Pulse:</strong> “Summarize CSS and vCore deltas for Gard from the last two P360 and CSS reports. Flag any declines & propose next steps.”</li>
+          <li><strong>QBR Prep:</strong> “Create a 5-slide exec brief for Gard covering CSS trend, vCore usage, API landscape, and top 3 risks/opportunities.”</li>
+          <li><strong>Agentic POV:</strong> “From reports, meetings, and slides, list top automation/API opportunities for Gard with estimated impact and owners.”</li>
         </ul>
       </div>
     </section>
   </div>
 
   <script>
-    const CONFIG = {"renewal": "2026-01-13", "css": {"labels": ["Q4-24", "Q1-25", "Q2-25", "Q3-25"], "data": [7.4, 7.6, 7.2, 7.1]}, "vcores": [12.0, 22.5, 0.0, 0.0], "api_counts": [65, 180], "product_adoption": {"categories": ["API Dev", "Monitoring", "Security", "Testing", "Documentation"], "scores": [70, 65, 75, 60, 65]}, "timeline": [{"date": "2025-09-04", "title": "Renewal Strategy Workshop", "note": "Outlined negotiation timeline & ROI proof points."}, {"date": "2025-08-26", "title": "Data Load Fix", "note": "Resolved mappings blocking API rollout."}, {"date": "2025-08-12", "title": "Exec Briefing", "note": "Aligned on renewal prep tasks."}]};
+    // Track active tab for visual feedback only
+    document.querySelectorAll('.link-chip').forEach(link => {
+      link.addEventListener('click', function() {
+        document.querySelectorAll('.link-chip').forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+      });
+    });
+
+    const CONFIG = {"renewal": "2026-12-19", "css": {"labels": ["Q4-24", "Q1-25", "Q2-25", "Q3-25"], "data": [8.3, 8.1, 8.0, 7.8]}, "vcores": [19.9, 50.6, 0.0, 0.0], "api_counts": [79, 279], "product_adoption": {"categories": ["API Dev", "Monitoring", "Security", "Testing", "Documentation"], "scores": [85, 70, 90, 65, 75]}, "timeline": [{"date": "2025-09-01", "title": "Platform Utilization Analysis", "note": "Identified decline and action areas."}, {"date": "2025-08-23", "title": "Reuse Analysis", "note": "279 pre-prod APIs and 79 prod APIs; reuse map shared."}, {"date": "2025-08-13", "title": "Exec Check-in", "note": "Spoke with leadership to align on adoption."}]};
 
     const body = document.getElementById('pageBody');
     document.getElementById('darkToggle').addEventListener('click', () => body.classList.toggle('dark'));
@@ -209,22 +207,6 @@
       type: 'line',
       data: { labels: CONFIG.css.labels, datasets: [{ label: 'CSS', data: CONFIG.css.data, borderColor: '#3B82F6', backgroundColor: 'rgba(59,130,246,.1)', fill:true, tension:.2 }]},
       options: { responsive:true, maintainAspectRatio:false }
-    });
-
-    const vcoreCtx = document.getElementById('vcores').getContext('2d');
-    new Chart(vcoreCtx, {
-      type: 'bar',
-      data: { labels: ['CH 1.0 Prod','CH 1.0 Pre-Prod','CH 2.0 Prod','CH 2.0 Pre-Prod'],
-              datasets:[{ label:'vCores Used', data: CONFIG.vcores, backgroundColor:['#10B981','#60A5FA','#F59E0B','#EF4444'] }] },
-      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}
-    });
-
-    const apiCtx = document.getElementById('apiLandscape').getContext('2d');
-    new Chart(apiCtx, {
-      type:'bar',
-      data:{ labels:['Production APIs','Pre-Production APIs'],
-             datasets:[{ data: CONFIG.api_counts, backgroundColor:['#6366F1','#94A3B8'] }]},
-      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{beginAtZero:true}}}
     });
 
     const productAdoptionCtx = document.getElementById('productAdoption').getContext('2d');
@@ -254,6 +236,22 @@
           }
         }
       }
+    });
+
+    const vcoreCtx = document.getElementById('vcores').getContext('2d');
+    new Chart(vcoreCtx, {
+      type: 'bar',
+      data: { labels: ['CH 1.0 Prod','CH 1.0 Pre-Prod','CH 2.0 Prod','CH 2.0 Pre-Prod'],
+              datasets:[{ label:'vCores Used', data: CONFIG.vcores, backgroundColor:['#10B981','#60A5FA','#F59E0B','#EF4444'] }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}
+    });
+
+    const apiCtx = document.getElementById('apiLandscape').getContext('2d');
+    new Chart(apiCtx, {
+      type:'bar',
+      data:{ labels:['Production APIs','Pre-Production APIs'],
+             datasets:[{ data: CONFIG.api_counts, backgroundColor:['#6366F1','#94A3B8'] }]},
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{beginAtZero:true}}}
     });
 
     const tl = document.getElementById('timelineCards');

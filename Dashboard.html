@@ -50,6 +50,7 @@
                     <button id="openSlides" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Google Slides</button>
                     <div class="border-t my-1 dark:border-gray-700"></div>
                     <button id="openSheets" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Google Sheets</button>
+                    <button id="openMeeting" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Meeting Summary</button>
                     <a href="https://docs.google.com/spreadsheets/d/1xYrb-0un2Ti6MVx-4tF9exsCF8Yicql65zaJqxrxgG4/edit?gid=402837923#gid=402837923" target="_blank" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Tasks Sheet</a>
                     <a href="https://docs.google.com/spreadsheets/d/1RjTmw42ayvyM5NHIBPqHivaM1evZRWoCM3XLNXQ4JZA/edit?gid=0#gid=0" target="_blank" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Accounts Sheet</a>
                     <button id="openDrive" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Google Drive</button>
@@ -190,6 +191,40 @@
             </div>
           </div>
         </div>
+        <!-- Meeting Summary Modal -->
+        <div id="modalMeeting" class="hidden fixed inset-0 z-40 flex items-center justify-center">
+          <div class="bg-white dark:bg-gray-900 rounded-lg p-6 w-full max-w-xl shadow-xl">
+            <div class="flex items-center justify-between mb-3">
+              <div class="font-bold text-lg">Meeting Summary</div>
+              <button data-close="modalMeeting" class="btn btn-ghost">✖︎</button>
+            </div>
+            <div class="space-y-3">
+              <div class="flex gap-2">
+                <label class="text-sm subtle">Type</label>
+                <select id="meetingType" class="border rounded px-2 py-2">
+                  <option value="account">Account</option>
+                  <option value="team">Team</option>
+                </select>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <input id="meetingAccount" type="text" class="border rounded px-2 py-2" placeholder="Account or Team name"/>
+                <input id="meetingAttendees" type="text" class="border rounded px-2 py-2" placeholder="Attendees (emails optional)"/>
+              </div>
+              <textarea id="meetingSummary" class="border rounded px-2 py-2 w-full" placeholder="Summary"></textarea>
+              <textarea id="meetingDecisions" class="border rounded px-2 py-2 w-full" placeholder="Decisions"></textarea>
+              <textarea id="meetingActions" class="border rounded px-2 py-2 w-full" placeholder="Action items"></textarea>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <input id="meetingOwner" type="text" class="border rounded px-2 py-2" placeholder="Owner"/>
+                <input id="meetingDue" type="date" class="border rounded px-2 py-2"/>
+                <input id="meetingLink" type="url" class="border rounded px-2 py-2" placeholder="Resource link"/>
+              </div>
+              <div class="flex gap-2 justify-end">
+                <button id="btnSubmitMeeting" class="px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Submit</button>
+              </div>
+              <div id="meetingStatus" class="text-sm text-gray-500"></div>
+            </div>
+          </div>
+        </div>
 
         <!-- Collapsible embedded Google Sheet -->
         <div id="sheetEmbedWrap" class="hidden rounded-xl border overflow-hidden">
@@ -201,6 +236,23 @@
 
     <div class="flex flex-col gap-8 w-full">
         <!-- All sections now stack vertically and use full width -->
+                <!-- KPI Bar -->
+         <section class="mb-2">
+           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+             <div class="card p-4 text-center">
+               <div class="text-sm subtle">Active Accounts</div>
+               <div id="kpiAccounts" class="text-3xl font-extrabold">--</div>
+             </div>
+             <div class="card p-4 text-center">
+               <div class="text-sm subtle">Avg CSS Score</div>
+               <div id="kpiAvgCss" class="text-3xl font-extrabold">--</div>
+             </div>
+             <div class="card p-4 text-center">
+               <div class="text-sm subtle">Renewals in 90 Days</div>
+               <div id="kpiRenew90" class="text-3xl font-extrabold">--</div>
+             </div>
+           </div>
+         </section>
                 <!-- Quick Links -->
          <div class="flex flex-wrap gap-2">
         <a class="chip link-chip" href="https://salesforce.okta.com/app/UserHome" target="_blank">Okta User Home</a>
@@ -265,6 +317,13 @@
                                                     </div>
                                                 </div>
                                             </section>
+                                            <!-- Account Detail Modal -->
+                                            <div id="accountModal" class="hidden fixed inset-0 bg-black bg-opacity-40 z-50 items-center justify-center">
+                                              <div class="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-2xl p-6 relative">
+                                                <button id="closeAccountModal" class="btn btn-ghost absolute top-2 right-2">✖︎</button>
+                                                <div id="accountModalContent"></div>
+                                              </div>
+                                            </div>
                                             <!-- Recent Activity -->
                                             <section class="mb-6">
                                                 <div class="card p-4">
@@ -896,9 +955,34 @@
             document.getElementById('btnLoadFromSheets')?.click();
         });
 
-        // Export to Google Sheets (disabled for new GAS portal; edit directly in Sheets)
+        // Export to Google Sheets via GAS portal (?api=save)
         document.getElementById('btnSaveToSheets').addEventListener('click', async () => {
-            alert('Direct export is disabled for the new Sheets portal. Edit data in the Google Sheets directly.');
+            sheetsUI.setStatus('Saving to Sheets...');
+            try {
+                const url = new URL(getSheetsWebAppUrl());
+                url.searchParams.set('api', 'save');
+                const payload = {
+                    accounts: (window.ACCOUNTS||[]).map(a=>({
+                        account:a.account||a.name,
+                        renewal:a.renewal||a.renewalDate,
+                        css:a.css||a.cssScore,
+                        envs:a.envs,
+                        vcoresProd:a.vcoresProd,
+                        vcoresPre:a.vcoresPre,
+                        risk:a.risk||a.renewalRisk
+                    })),
+                    tasks: (window.TASKS||[]).map(t=>({
+                        id:t.id, title:t.title, account:t.account||t.accountId, dueDate:t.dueDate, priority:t.priority, assignee:t.assignee, status:t.status||'open', done:t.done||t.completed, notes:t.notes||''
+                    }))
+                };
+                const res = await fetch(url.toString(), { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
+                if(!res.ok) throw new Error('HTTP '+res.status);
+                await res.json().catch(()=>null);
+                sheetsUI.setStatus('Saved to Sheets ✓');
+            } catch (err) {
+                sheetsUI.setStatus('Failed to save', true);
+                console.error('Save error:', err);
+            }
         });
 
         // --- Existing logic for login, activity, tasks, etc. ---
@@ -1008,6 +1092,7 @@
           const openSheetsBtn = document.getElementById('openSheets');
           
           const openDriveBtn  = document.getElementById('openDrive');
+          const openMeetingBtn = document.getElementById('openMeeting');
           const modals = {
             modalSlack: document.getElementById('modalSlack'),
             modalEmail: document.getElementById('modalEmail'),
@@ -1031,6 +1116,7 @@
           openSheetsBtn?.addEventListener('click', ()=> openModal('modalSheets'));
           
           openDriveBtn?.addEventListener('click', ()=> openModal('modalDrive'));
+          openMeetingBtn?.addEventListener('click', ()=> openModal('modalMeeting'));
 
           // Sheets config save
           const sheetsUrlInput = document.getElementById('sheetsWebAppUrl');
@@ -1204,6 +1290,42 @@
             } catch(e){ console.error(e); setEmailStatus('Digest failed', true); }
           });
 
+          // Meeting Summary
+          const msType = document.getElementById('meetingType');
+          const msAccount = document.getElementById('meetingAccount');
+          const msAttendees = document.getElementById('meetingAttendees');
+          const msSummary = document.getElementById('meetingSummary');
+          const msDecisions = document.getElementById('meetingDecisions');
+          const msActions = document.getElementById('meetingActions');
+          const msOwner = document.getElementById('meetingOwner');
+          const msDue = document.getElementById('meetingDue');
+          const msLink = document.getElementById('meetingLink');
+          const msSubmit = document.getElementById('btnSubmitMeeting');
+          const msStatus = document.getElementById('meetingStatus');
+          function setMsStatus(s,err){ if(msStatus){ msStatus.textContent=s; msStatus.className=`text-sm ${err?'text-red-500':'text-gray-500'}`; } }
+          msSubmit?.addEventListener('click', async ()=>{
+            try {
+              setMsStatus('Submitting meeting...');
+              const url = new URL(getSheetsWebAppUrl()); url.searchParams.set('api','addmeeting');
+              const payload = {
+                type: (msType?.value||'account'),
+                account: (msAccount?.value||''),
+                team: (msType?.value==='team') ? (msAccount?.value||'') : '',
+                attendees: (msAttendees?.value||''),
+                summary: (msSummary?.value||''),
+                decisions: (msDecisions?.value||''),
+                actions: (msActions?.value||''),
+                owner: (msOwner?.value||''),
+                dueDate: (msDue?.value||''),
+                link: (msLink?.value||'')
+              };
+              const res = await fetch(url.toString(), { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+              if(!res.ok) throw new Error('HTTP '+res.status);
+              await res.json();
+              setMsStatus('Meeting saved ✓');
+              closeAll();
+            } catch (e){ console.error(e); setMsStatus('Failed to save', true); }
+          });
           // Slides
           const slidesTemplateId = document.getElementById('slidesTemplateId');
           const slidesExport = document.getElementById('btnSlidesExport');
