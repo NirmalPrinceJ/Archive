@@ -50,8 +50,8 @@
                     <button id="openSlides" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Google Slides</button>
                     <div class="border-t my-1 dark:border-gray-700"></div>
                     <button id="openSheets" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Google Sheets</button>
-                    <a href="https://docs.google.com/spreadsheets/d/1RjTmw42ayvyM5NHIBPqHivaM1evZRWoCM3XLNXQ4JZA/edit?gid=0#gid=0" target="_blank" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Tasks Sheet</a>
-                    <a href="https://docs.google.com/spreadsheets/d/1xYrb-0un2Ti6MVx-4tF9exsCF8Yicql65zaJqxrxgG4/edit?gid=402837923#gid=402837923" target="_blank" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Accounts Sheet</a>
+                    <a href="https://docs.google.com/spreadsheets/d/1xYrb-0un2Ti6MVx-4tF9exsCF8Yicql65zaJqxrxgG4/edit?gid=402837923#gid=402837923" target="_blank" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Tasks Sheet</a>
+                    <a href="https://docs.google.com/spreadsheets/d/1RjTmw42ayvyM5NHIBPqHivaM1evZRWoCM3XLNXQ4JZA/edit?gid=0#gid=0" target="_blank" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Accounts Sheet</a>
                     <button id="openDrive" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Google Drive</button>
                   </div>
                 </div>
@@ -763,7 +763,7 @@
         })();
 
         // --- Google Sheets Integration ---
-        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1xYrb-0un2Ti6MVx-4tF9exsCF8Yicql65zaJqxrxgG4/edit?gid=402837923#gid=402837923';
+        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1RjTmw42ayvyM5NHIBPqHivaM1evZRWoCM3XLNXQ4JZA/edit?gid=0#gid=0';
         // Backend Web App endpoint (Google Apps Script deployment URL)
         const SHEETS_WEBAPP_URL = 'https://script.google.com/macros/s/REPLACE_WITH_DEPLOYMENT_ID/exec';
         // Keep compatibility with later code references
@@ -1037,8 +1037,8 @@
           const sheetEmbedInput = document.getElementById('sheetsEmbedUrl');
           const btnUseTasksEmbed = document.getElementById('btnUseTasksEmbed');
           const btnUseAccountsEmbed = document.getElementById('btnUseAccountsEmbed');
-          const DEFAULT_TASKS_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1RjTmw42ayvyM5NHIBPqHivaM1evZRWoCM3XLNXQ4JZA/edit?gid=0#gid=0';
-          const DEFAULT_ACCOUNTS_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1xYrb-0un2Ti6MVx-4tF9exsCF8Yicql65zaJqxrxgG4/edit?gid=402837923#gid=402837923';
+          const DEFAULT_TASKS_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1xYrb-0un2Ti6MVx-4tF9exsCF8Yicql65zaJqxrxgG4/edit?gid=402837923#gid=402837923';
+          const DEFAULT_ACCOUNTS_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1RjTmw42ayvyM5NHIBPqHivaM1evZRWoCM3XLNXQ4JZA/edit?gid=0#gid=0';
           const btnSaveSheetsConfig = document.getElementById('btnSaveSheetsConfig');
           try {
             const w = localStorage.getItem('sheets.webapp.url'); if (w && sheetsUrlInput) sheetsUrlInput.value = w;
