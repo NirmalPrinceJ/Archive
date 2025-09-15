@@ -102,6 +102,16 @@
                   <button id="btnUseAccountsEmbed" class="px-2 py-1 rounded border">Use Accounts</button>
                 </div>
               </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label class="text-sm subtle">Global CSS URL (optional)</label>
+                  <input id="globalCssUrl" type="url" class="border rounded px-2 py-2 w-full" placeholder="https://.../global.css"/>
+                </div>
+                <div>
+                  <label class="text-sm subtle">Calendar Embed URL (optional)</label>
+                  <input id="calendarUrlInput" type="url" class="border rounded px-2 py-2 w-full" placeholder="https://calendar.google.com/calendar/embed?..."/>
+                </div>
+              </div>
               <div class="flex gap-2">
                 <button id="btnSaveSheetsConfig" class="px-3 py-2 rounded-lg border bg-white hover:bg-gray-50">💾 Save Config</button>
                 <button id="btnLoadFromSheets" class="px-3 py-2 rounded-lg border bg-white hover:bg-gray-50">🔄 Refresh Data</button>
@@ -226,10 +236,7 @@
           </div>
         </div>
 
-        <!-- Collapsible embedded Google Sheet -->
-        <div id="sheetEmbedWrap" class="hidden rounded-xl border overflow-hidden">
-            <iframe id="sheetFrame" src="" width="100%" height="480" style="border:0;"></iframe>
-        </div>
+        <!-- Collapsible embedded Google Sheet (moved below tasks; keep placeholder here removed) -->
 
         
 
@@ -254,7 +261,7 @@
            </div>
          </section>
                 <!-- Quick Links -->
-         <div class="flex flex-wrap gap-2">
+         <div id="quickLinks" class="flex flex-wrap gap-2">
         <a class="chip link-chip" href="https://salesforce.okta.com/app/UserHome" target="_blank">Okta User Home</a>
         <a class="chip link-chip" href="https://sites.google.com/salesforce.com/gard-agentspov/home?pli=1" target="_blank">Agentic POV Site</a>
         <a class="chip link-chip" href="https://salesforce.okta.com/home/salesforce_other/0oa1moszykHIgxlUY1t7/46" target="_blank">OrgCS</a>
@@ -356,6 +363,53 @@
                                                     </div>
                                                 </div>
                                             </section>
+                                            <!-- Quick Notes (Sticky) -->
+                                            <section class="mb-6">
+                                                <div class="card p-4">
+                                                    <div class="section-title flex items-center justify-between">
+                                                        <span>Quick Notes</span>
+                                                        <div class="flex gap-2">
+                                                            <select id="noteColor" class="border rounded px-2 py-1 text-sm">
+                                                                <option value="#FEF3C7">Yellow</option>
+                                                                <option value="#BFDBFE">Blue</option>
+                                                                <option value="#FBCFE8">Pink</option>
+                                                                <option value="#BBF7D0">Green</option>
+                                                            </select>
+                                                            <button id="addNoteBtn" class="btn btn-ghost">Add Note</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3" id="notesGrid"></div>
+                                                </div>
+                                            </section>
+
+                                            <!-- Log Book -->
+                                            <section class="mb-6">
+                                                <div class="card p-4">
+                                                    <div class="section-title flex items-center justify-between">
+                                                        <span>Log Book</span>
+                                                        <div class="flex gap-2">
+                                                            <input id="logTitle" type="text" class="border rounded px-2 py-1 text-sm" placeholder="Title"/>
+                                                            <input id="logTag" type="text" class="border rounded px-2 py-1 text-sm" placeholder="Tag (email, slack, work, case)"/>
+                                                            <input id="logLink" type="url" class="border rounded px-2 py-1 text-sm" placeholder="Link"/>
+                                                            <button id="addLogBtn" class="btn btn-ghost">Add Entry</button>
+                                                        </div>
+                                                    </div>
+                                                    <div id="logList" class="space-y-2"></div>
+                                                </div>
+                                            </section>
+
+        <!-- Workspace Frames: Sheet + Calendar side by side on large screens -->
+        <section class="mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="rounded-xl border overflow-hidden">
+                    <iframe id="sheetFrame" src="" width="100%" height="420" style="border:0;"></iframe>
+                </div>
+                <div class="rounded-xl border overflow-hidden">
+                    <iframe id="calendarFrame" src="" width="100%" height="420" style="border:0;"></iframe>
+                </div>
+            </div>
+            <div class="text-sm subtle mt-2">Configure embed URLs under Integrations → Google Sheets.</div>
+        </section>
     </div>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
@@ -630,10 +684,12 @@
             const modal = document.createElement('div');
             modal.id = 'chartModal';
             modal.className = 'fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50';
-            modal.innerHTML = `<div class="bg-white dark:bg-gray-900 rounded-lg p-8 shadow-lg w-full max-w-2xl relative">
+            modal.innerHTML = `<div class="bg-white dark:bg-gray-900 rounded-lg p-6 shadow-lg w-full max-w-xl relative">
                 <button class="absolute top-2 right-2 btn btn-ghost" onclick="closeModal()">✖︎</button>
                 <div class="mb-4 font-bold text-lg">${CHARTS.find(c=>c.id===id).label}</div>
-                <canvas id="modalChart" height="320" style="max-width:100%;height:320px;"></canvas>
+                <div style="width:560px;max-width:100%;margin:0 auto;">
+                  <canvas id="modalChart" height="360" style="width:560px;max-width:100%;height:360px;"></canvas>
+                </div>
             </div>`;
             document.body.appendChild(modal);
             // Focus trap
@@ -699,7 +755,8 @@
         });
 
         // --- Show/Hide Charts button ---
-        document.getElementById('toggleChartsBtn').onclick = ()=>UI.toggleCharts();
+        // Open charts in a fixed-width modal only
+        document.getElementById('toggleChartsBtn').onclick = ()=>openModal('vcores');
         document.getElementById('hideChartsBtn').onclick = ()=>UI.toggleCharts();
 
         // --- Initial load ---
@@ -827,6 +884,7 @@
         const SHEETS_WEBAPP_URL = 'https://script.google.com/macros/s/REPLACE_WITH_DEPLOYMENT_ID/exec';
         // Keep compatibility with later code references
         const SHEET_EMBED_URL = typeof SHEET_URL !== 'undefined' ? SHEET_URL : '';
+        const CALENDAR_EMBED_URL = localStorage.getItem('calendar.embed.url') || '';
         function getSheetsWebAppUrl(){ try { return localStorage.getItem('sheets.webapp.url') || SHEETS_WEBAPP_URL; } catch { return SHEETS_WEBAPP_URL; } }
         function getSheetEmbedUrl(){ try { return localStorage.getItem('sheets.embed.url') || SHEET_EMBED_URL || SHEET_URL || ''; } catch { return SHEET_EMBED_URL || SHEET_URL || ''; } }
         const sheetsUI = {
@@ -985,8 +1043,53 @@
             }
         });
 
+        // Apply calendar embed if configured
+        try { if (CALENDAR_EMBED_URL) document.getElementById('calendarFrame').src = CALENDAR_EMBED_URL; } catch {}
+
         // --- Existing logic for login, activity, tasks, etc. ---
-        </script>
+    </script>
+    <script>
+    // Quick Notes + Log Book + Quick Links customization
+    (function(){
+      // Notes
+      const notesKey='csm.notes';
+      const grid=document.getElementById('notesGrid');
+      const addBtn=document.getElementById('addNoteBtn');
+      const colorSel=document.getElementById('noteColor');
+      function loadNotes(){ try{ return JSON.parse(localStorage.getItem(notesKey)||'[]'); }catch{return [];} }
+      function saveNotes(list){ try{ localStorage.setItem(notesKey, JSON.stringify(list)); }catch{} }
+      function renderNotes(){ const list=loadNotes(); grid.innerHTML=''; list.forEach((n,i)=>{ const d=document.createElement('div'); d.className='p-3 rounded shadow'; d.style.background=n.color||'#FEF3C7'; d.innerHTML=`<div contenteditable class='text-sm' data-i='${i}'>${n.text||''}</div><div class='mt-2 flex justify-end'><button data-del='${i}' class='text-xs underline'>Delete</button></div>`; grid.appendChild(d); });
+        grid.querySelectorAll('div[contenteditable]').forEach(el=>{ el.addEventListener('blur',()=>{ const i=Number(el.dataset.i); const list=loadNotes(); if(list[i]){ list[i].text=el.textContent.trim(); saveNotes(list);} }); });
+        grid.querySelectorAll('button[data-del]').forEach(btn=>btn.addEventListener('click',()=>{ const i=Number(btn.dataset.del); const list=loadNotes(); list.splice(i,1); saveNotes(list); renderNotes(); }));
+      }
+      addBtn?.addEventListener('click',()=>{ const list=loadNotes(); list.unshift({ text:'', color: colorSel?.value||'#FEF3C7', ts:Date.now() }); saveNotes(list); renderNotes(); });
+      renderNotes();
+
+      // Log Book
+      const logKey='csm.log';
+      const logList=document.getElementById('logList');
+      const addLogBtn=document.getElementById('addLogBtn');
+      const logTitle=document.getElementById('logTitle');
+      const logTag=document.getElementById('logTag');
+      const logLink=document.getElementById('logLink');
+      function loadLog(){ try{ return JSON.parse(localStorage.getItem(logKey)||'[]'); }catch{return [];} }
+      function saveLog(items){ try{ localStorage.setItem(logKey, JSON.stringify(items)); }catch{} }
+      function renderLog(){ const items=loadLog().sort((a,b)=>b.ts-a.ts).slice(0,50); logList.innerHTML=''; items.forEach((it,i)=>{ const d=document.createElement('div'); d.className='p-3 border rounded flex justify-between items-start'; d.innerHTML=`<div><div class='font-semibold'>${it.title||'Entry'}</div><div class='text-xs subtle'>${new Date(it.ts).toLocaleString()} ${it.tag?('• '+it.tag):''}</div>${it.link?(`<a class='text-blue-600 underline text-sm' target='_blank' href='${it.link}'>link</a>`):''}</div><button data-i='${i}' class='text-xs underline'>Remove</button>`; logList.appendChild(d); });
+        logList.querySelectorAll('button[data-i]').forEach(btn=>btn.addEventListener('click',()=>{ const i=Number(btn.dataset.i); const items=loadLog(); items.splice(i,1); saveLog(items); renderLog(); }));
+      }
+      addLogBtn?.addEventListener('click',()=>{ const title=logTitle?.value.trim(); if(!title) return; const items=loadLog(); items.unshift({ title, tag:logTag?.value.trim()||'', link:logLink?.value.trim()||'', ts:Date.now() }); saveLog(items); renderLog(); if(logTitle) logTitle.value=''; if(logTag) logTag.value=''; if(logLink) logLink.value=''; });
+      renderLog();
+
+      // Quick Links customization (append custom links)
+      const linksKey='quick.links';
+      const qlWrap=document.getElementById('quickLinks');
+      function loadLinks(){ try{ return JSON.parse(localStorage.getItem(linksKey)||'[]'); }catch{return [];} }
+      function saveLinks(arr){ try{ localStorage.setItem(linksKey, JSON.stringify(arr)); }catch{} }
+      function renderCustomLinks(){ const list=loadLinks(); list.forEach(l=>{ const a=document.createElement('a'); a.className='chip link-chip'; a.href=l.href; a.target='_blank'; a.textContent=l.label; qlWrap?.appendChild(a); }); }
+      function addCustomizeBtn(){ if(!qlWrap) return; const btn=document.createElement('button'); btn.className='chip'; btn.textContent='Customize Links'; btn.addEventListener('click',()=>{ const label=prompt('Label'); if(!label) return; const href=prompt('URL'); if(!href) return; const list=loadLinks(); list.push({label,href}); saveLinks(list); renderCustomLinks(); }); qlWrap.appendChild(btn); }
+      addCustomizeBtn(); renderCustomLinks();
+    })();
+    </script>
 
         <!-- External Inputs: conversations.json and chat.html -->
         <script>
@@ -1126,6 +1229,8 @@
           const DEFAULT_TASKS_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1xYrb-0un2Ti6MVx-4tF9exsCF8Yicql65zaJqxrxgG4/edit?gid=402837923#gid=402837923';
           const DEFAULT_ACCOUNTS_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1RjTmw42ayvyM5NHIBPqHivaM1evZRWoCM3XLNXQ4JZA/edit?gid=0#gid=0';
           const btnSaveSheetsConfig = document.getElementById('btnSaveSheetsConfig');
+          const cssUrlInput = document.getElementById('globalCssUrl');
+          const calUrlInput = document.getElementById('calendarUrlInput');
           try {
             const w = localStorage.getItem('sheets.webapp.url'); if (w && sheetsUrlInput) sheetsUrlInput.value = w;
             const e = localStorage.getItem('sheets.embed.url'); if (e && sheetEmbedInput) sheetEmbedInput.value = e;
@@ -1133,11 +1238,25 @@
           btnSaveSheetsConfig?.addEventListener('click', ()=>{
             try { const v = (sheetsUrlInput?.value||'').trim(); if (v) localStorage.setItem('sheets.webapp.url', v); } catch {}
             try { const v = (sheetEmbedInput?.value||'').trim(); if (v) localStorage.setItem('sheets.embed.url', v); } catch {}
+            try { const v = (cssUrlInput?.value||'').trim(); if (v) localStorage.setItem('global.css.url', v); } catch {}
+            try { const v = (calUrlInput?.value||'').trim(); if (v) localStorage.setItem('calendar.embed.url', v); } catch {}
             const frame = document.getElementById('sheetFrame');
             const wrap = document.getElementById('sheetEmbedWrap');
             if (frame) frame.src = (sheetEmbedInput?.value||'').trim() || getSheetEmbedUrl();
             wrap?.classList.remove('hidden');
             const toggle = document.getElementById('btnToggleSheet'); if (toggle) toggle.textContent = '📄 Hide Embedded Sheet';
+            // Apply global CSS and calendar
+            (function applyGlobalCss(){
+              try {
+                const url = localStorage.getItem('global.css.url');
+                if (!url) return;
+                let link = document.getElementById('globalCssLink');
+                if (!link) { link = document.createElement('link'); link.id='globalCssLink'; link.rel='stylesheet'; document.head.appendChild(link); }
+                link.href = url;
+              } catch {}
+            })();
+            const cal = document.getElementById('calendarFrame');
+            if (cal && (calUrlInput?.value||'').trim()) cal.src = (calUrlInput?.value||'').trim();
           });
           btnUseTasksEmbed?.addEventListener('click', ()=>{ if (sheetEmbedInput) sheetEmbedInput.value = DEFAULT_TASKS_SHEET_URL; });
           btnUseAccountsEmbed?.addEventListener('click', ()=>{ if (sheetEmbedInput) sheetEmbedInput.value = DEFAULT_ACCOUNTS_SHEET_URL; });

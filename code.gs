@@ -1513,17 +1513,29 @@ function upsertAccounts(list) {
   list.forEach(function(a){
     var name = a.account || a.name || a['Account Name']; if (!name) return;
     var r = (name in map)? map[name] : -1;
-    if (r<0) { var row = new Array(headers.length).fill(''); row[nameIdx]=name; values.push(row); r = values.length-1; inserted++; }
-    else { updated++; }
-    if (renewIdx>=0 && (a.renewal||a.renewalDate)) values[r][renewIdx] = new Date(a.renewal||a.renewalDate);
-    if (cssIdx>=0 && a.css!=null) values[r][cssIdx] = Number(a.css);
-    if (envsIdx>=0 && a.envs!=null) values[r][envsIdx] = Number(a.envs);
-    if (vprodIdx>=0 && a.vcoresProd!=null) values[r][vprodIdx] = Number(a.vcoresProd);
-    if (vpreIdx>=0 && a.vcoresPre!=null) values[r][vpreIdx] = Number(a.vcoresPre);
-    if (riskIdx>=0 && a.risk!=null) values[r][riskIdx] = String(a.risk).toLowerCase();
+    if (r<0) {
+      // append as new
+      var newRow = new Array(headers.length).fill(''); newRow[nameIdx]=name;
+      if (renewIdx>=0 && (a.renewal||a.renewalDate)) newRow[renewIdx] = new Date(a.renewal||a.renewalDate);
+      if (cssIdx>=0 && a.css!=null) newRow[cssIdx] = Number(a.css);
+      if (envsIdx>=0 && a.envs!=null) newRow[envsIdx] = Number(a.envs);
+      if (vprodIdx>=0 && a.vcoresProd!=null) newRow[vprodIdx] = Number(a.vcoresProd);
+      if (vpreIdx>=0 && a.vcoresPre!=null) newRow[vpreIdx] = Number(a.vcoresPre);
+      if (riskIdx>=0 && a.risk!=null) newRow[riskIdx] = String(a.risk).toLowerCase();
+      sh.appendRow(newRow);
+      inserted++;
+    } else {
+      // update in place
+      var rowNumber = r+1; // 1-based
+      if (renewIdx>=0 && (a.renewal||a.renewalDate)) sh.getRange(rowNumber, renewIdx+1).setValue(new Date(a.renewal||a.renewalDate));
+      if (cssIdx>=0 && a.css!=null) sh.getRange(rowNumber, cssIdx+1).setValue(Number(a.css));
+      if (envsIdx>=0 && a.envs!=null) sh.getRange(rowNumber, envsIdx+1).setValue(Number(a.envs));
+      if (vprodIdx>=0 && a.vcoresProd!=null) sh.getRange(rowNumber, vprodIdx+1).setValue(Number(a.vcoresProd));
+      if (vpreIdx>=0 && a.vcoresPre!=null) sh.getRange(rowNumber, vpreIdx+1).setValue(Number(a.vcoresPre));
+      if (riskIdx>=0 && a.risk!=null) sh.getRange(rowNumber, riskIdx+1).setValue(String(a.risk).toLowerCase());
+      updated++;
+    }
   });
-  sh.clearContents();
-  sh.getRange(1,1,values.length, headers.length).setValues(values);
   return { inserted: inserted, updated: updated };
 }
 
@@ -1549,21 +1561,35 @@ function upsertTasks(list) {
   list.forEach(function(t){
     var id = t.id || t.TaskID || '';
     var r = id && (id in map) ? map[id] : -1;
-    if (r<0) { id = id || ('task_' + Utilities.getUuid().slice(0,8)); var row = new Array(headers.length).fill(''); if (idIdx>=0) row[idIdx]=id; values.push(row); r=values.length-1; inserted++; }
-    else { updated++; }
-    if (titleIdx>=0) values[r][titleIdx] = t.title||'';
-    if (acctIdx>=0)  values[r][acctIdx]  = t.account||t.accountId||'';
-    if (dueIdx>=0)   values[r][dueIdx]   = t.dueDate? new Date(t.dueDate):'';
-    if (priIdx>=0)   values[r][priIdx]   = t.priority||'';
-    if (asgIdx>=0)   values[r][asgIdx]   = t.assignee||'';
-    if (stIdx>=0)    values[r][stIdx]    = t.status||'open';
-    if (doneIdx>=0)  values[r][doneIdx]  = !!(t.done||t.completed);
-    if (createdIdx>=0 && !values[r][createdIdx]) values[r][createdIdx] = new Date();
-    if (descIdx>=0)  values[r][descIdx]  = t.notes||t.description||'';
-    try { if (t.dueDate) createCalendarEventForTask(values[r][titleIdx]||'', values[r][acctIdx]||'', values[r][dueIdx]); } catch(e) {}
+    if (r<0) {
+      id = id || ('task_' + Utilities.getUuid().slice(0,8));
+      var newRow = new Array(headers.length).fill('');
+      if (idIdx>=0) newRow[idIdx]=id;
+      if (titleIdx>=0) newRow[titleIdx]=t.title||'';
+      if (acctIdx>=0) newRow[acctIdx]=t.account||t.accountId||'';
+      if (dueIdx>=0) newRow[dueIdx]=t.dueDate? new Date(t.dueDate):'';
+      if (priIdx>=0) newRow[priIdx]=t.priority||'';
+      if (asgIdx>=0) newRow[asgIdx]=t.assignee||'';
+      if (stIdx>=0) newRow[stIdx]=t.status||'open';
+      if (doneIdx>=0) newRow[doneIdx]=!!(t.done||t.completed);
+      if (createdIdx>=0) newRow[createdIdx]=new Date();
+      if (descIdx>=0) newRow[descIdx]=t.notes||t.description||'';
+      sh.appendRow(newRow); inserted++;
+      try { if (t.dueDate) createCalendarEventForTask(t.title||'', t.account||t.accountId||'', newRow[dueIdx]); } catch(e) {}
+    } else {
+      var rowNumber=r+1;
+      if (titleIdx>=0) sh.getRange(rowNumber, titleIdx+1).setValue(t.title||'');
+      if (acctIdx>=0)  sh.getRange(rowNumber, acctIdx+1).setValue(t.account||t.accountId||'');
+      if (dueIdx>=0)   sh.getRange(rowNumber, dueIdx+1).setValue(t.dueDate? new Date(t.dueDate):'');
+      if (priIdx>=0)   sh.getRange(rowNumber, priIdx+1).setValue(t.priority||'');
+      if (asgIdx>=0)   sh.getRange(rowNumber, asgIdx+1).setValue(t.assignee||'');
+      if (stIdx>=0)    sh.getRange(rowNumber, stIdx+1).setValue(t.status||'open');
+      if (doneIdx>=0)  sh.getRange(rowNumber, doneIdx+1).setValue(!!(t.done||t.completed));
+      if (createdIdx>=0 && !values[r][createdIdx]) sh.getRange(rowNumber, createdIdx+1).setValue(new Date());
+      if (descIdx>=0)  sh.getRange(rowNumber, descIdx+1).setValue(t.notes||t.description||'');
+      updated++;
+    }
   });
-  sh.clearContents();
-  sh.getRange(1,1,values.length, headers.length).setValues(values);
   return { inserted: inserted, updated: updated };
 }
 
@@ -1825,6 +1851,9 @@ function setupAndFix() {
     console.log('Step 4: Updating configuration...');
     updateConfig(sheetIds, folderIds);
     
+    console.log('Step 4.1: Ensuring Dashboard.html in Drive...');
+    ensureDefaultDashboardIfMissing();
+
     console.log('Step 5: Adding sample data...');
     createMockAccounts();
     
@@ -2181,21 +2210,27 @@ function createTimelineEvent(account, date, eventTypes, areas) {
 }
 
 function setupFolders() {
-  var folderIds = {};
+  var ids = {};
   try {
-    if (CONFIG.DASHBOARD_FOLDER_ID && folderExists(CONFIG.DASHBOARD_FOLDER_ID)) {
-      console.log('Using existing dashboard folder');
-      folderIds.dashboards = CONFIG.DASHBOARD_FOLDER_ID;
-    } else {
-      console.log('Creating dashboard folder...');
-      folderIds.dashboards = DriveApp.createFolder('CSM Dashboards').getId();
+    var props = PropertiesService.getScriptProperties();
+    // Root workspace folder 'CSM workspace' (single source of truth)
+    var rootId = props.getProperty('WORKSPACE_FOLDER_ID');
+    var root = null;
+    if (rootId) { try { root = DriveApp.getFolderById(rootId); } catch(e) { root = null; } }
+    if (!root) {
+      var it = DriveApp.getFoldersByName('CSM workspace');
+      root = it.hasNext() ? it.next() : DriveApp.createFolder('CSM workspace');
+      props.setProperty('WORKSPACE_FOLDER_ID', root.getId());
     }
-    // QBR slides folder
-    folderIds.qbr = DriveApp.createFolder('QBR Slides').getId();
-    // Resources folder (for live updates)
-    folderIds.resources = DriveApp.createFolder('CSM Resources').getId();
-    console.log('Folders created/verified');
-    return folderIds;
+    function ensureChild(name){ var i = root.getFoldersByName(name); return i.hasNext()? i.next() : root.createFolder(name); }
+    var dash = (CONFIG.DASHBOARD_FOLDER_ID && folderExists(CONFIG.DASHBOARD_FOLDER_ID)) ? DriveApp.getFolderById(CONFIG.DASHBOARD_FOLDER_ID) : ensureChild('Dashboards');
+    var qbr  = (CONFIG.QBR_SLIDES_FOLDER_ID && folderExists(CONFIG.QBR_SLIDES_FOLDER_ID)) ? DriveApp.getFolderById(CONFIG.QBR_SLIDES_FOLDER_ID) : ensureChild('QBR Slides');
+    var res  = (CONFIG.RESOURCES_FOLDER_ID && folderExists(CONFIG.RESOURCES_FOLDER_ID)) ? DriveApp.getFolderById(CONFIG.RESOURCES_FOLDER_ID) : ensureChild('CSM Resources');
+    ids.dashboards = dash.getId();
+    ids.qbr = qbr.getId();
+    ids.resources = res.getId();
+    console.log('Workspace verified at: ' + root.getName());
+    return ids;
   } catch (error) {
     console.log('Error setting up folders:', error.message);
     throw error;
@@ -2235,6 +2270,116 @@ function updateConfig(sheetIds, folderIds) {
     'NOTIFICATION_EMAIL': userEmail
   });
   console.log('Configuration updated');
+}
+
+// ==================== DASHBOARD DEPLOYMENT HELPERS ====================
+
+/**
+ * Ensure a Dashboard.html file exists in the Dashboard folder.
+ * If missing, deploys the enhanced overview as a starting point.
+ */
+function ensureDefaultDashboardIfMissing() {
+  var cfg = getConfig();
+  if (!cfg.DASHBOARD_FOLDER_ID) return;
+  var folder = DriveApp.getFolderById(cfg.DASHBOARD_FOLDER_ID);
+  var it = folder.getFilesByName('Dashboard.html');
+  if (it.hasNext()) {
+    console.log('Dashboard.html already present.');
+    return;
+  }
+  // Use the enhanced overview as a starter file
+  var html = getEnhancedDashboardHTML();
+  // Patch with runtime URLs
+  html = patchDashboardContent(html, cfg, ScriptApp.getService().getUrl());
+  var file = folder.createFile(Utilities.newBlob(html, 'text/html', 'Dashboard.html'));
+  console.log('Deployed starter Dashboard.html:', file.getUrl());
+}
+
+/**
+ * Overwrite or create Dashboard.html with provided HTML content.
+ */
+function saveDashboardHtml(html) {
+  var cfg = getConfig();
+  if (!cfg.DASHBOARD_FOLDER_ID) throw new Error('DASHBOARD_FOLDER_ID not configured');
+  var folder = DriveApp.getFolderById(cfg.DASHBOARD_FOLDER_ID);
+  // Patch HTML with runtime URLs
+  html = patchDashboardContent(html, cfg, ScriptApp.getService().getUrl());
+  var it = folder.getFilesByName('Dashboard.html');
+  if (it.hasNext()) {
+    var file = it.next();
+    file.setContent(html);
+    return file.getId();
+  }
+  var created = folder.createFile(Utilities.newBlob(html, 'text/html', 'Dashboard.html'));
+  return created.getId();
+}
+
+/**
+ * Fetch Dashboard.html content from a URL (e.g., GitHub raw) and deploy it.
+ */
+function deployDashboardFromUrl(url) {
+  var resp = UrlFetchApp.fetch(url, { muteHttpExceptions:true });
+  if (resp.getResponseCode() < 200 || resp.getResponseCode() >= 300) {
+    throw new Error('Failed to fetch dashboard from URL: ' + resp.getResponseCode());
+  }
+  var html = resp.getContentText();
+  return saveDashboardHtml(html);
+}
+
+// ==================== OPTIONAL: SHEET MENU (when bound) ====================
+
+/**
+ * If this script is bound to a Google Sheet, adds a simple menu to push/deploy dashboard.
+ * NOTE: onOpen only runs in container-bound contexts. Safe to leave in standalone.
+ */
+function onOpen() {
+  try {
+    var ui = SpreadsheetApp.getUi();
+    ui.createMenu('CSM Dashboard')
+      .addItem('Push Dashboard from Project', 'pushDashboardFromFile')
+      .addItem('Deploy Dashboard from URL', 'promptDeployFromUrl')
+      .addSeparator()
+      .addItem('Run Update (scan + automation)', 'runUpdateMenu')
+      .addToUi();
+  } catch (e) {
+    // Not in a container-bound context; ignore
+  }
+}
+
+function pushDashboardFromFile() {
+  try {
+    var html = HtmlService.createHtmlOutputFromFile('DashboardSource').getContent();
+    var id = saveDashboardHtml(html);
+    try { SpreadsheetApp.getActive().toast('Dashboard updated: ' + id); } catch(e) {}
+  } catch (e) {
+    try { SpreadsheetApp.getUi().alert('Push failed: ' + e); } catch(_) {}
+    throw e;
+  }
+}
+
+function promptDeployFromUrl() {
+  try {
+    var ui = SpreadsheetApp.getUi();
+    var resp = ui.prompt('Deploy Dashboard from URL', 'Paste a raw HTML URL to fetch and deploy as Dashboard.html', ui.ButtonSet.OK_CANCEL);
+    if (resp.getSelectedButton() === ui.Button.OK) {
+      var url = resp.getResponseText().trim();
+      var id = deployDashboardFromUrl(url);
+      ui.alert('Deployed. File ID: ' + id);
+    }
+  } catch (e) {
+    try { SpreadsheetApp.getUi().alert('Deploy failed: ' + e); } catch(_) {}
+    throw e;
+  }
+}
+
+function runUpdateMenu() {
+  try {
+    runDailyIngestionTask();
+    try { SpreadsheetApp.getActive().toast('Update completed'); } catch(e) {}
+  } catch (e) {
+    try { SpreadsheetApp.getUi().alert('Update failed: ' + e); } catch(_) {}
+    throw e;
+  }
 }
 
 function createMockAccounts() {
