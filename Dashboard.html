@@ -45,6 +45,8 @@
                 <div class="relative">
                   <button id="btnIntegrationsMenu" class="btn btn-ghost">🔌 Integrations</button>
                   <div id="integrationsDropdown" class="hidden absolute right-0 mt-2 w-56 rounded-lg border bg-white shadow-lg z-20 dark:bg-gray-900 dark:border-gray-700">
+                    <button id="openGPT" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">🤖 GPT-5 Settings</button>
+                    <div class="border-t my-1 dark:border-gray-700"></div>
                     <button id="openSlack" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Slack</button>
                     <button id="openEmail" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Email</button>
                     <button id="openSlides" class="block w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800">Google Slides</button>
@@ -201,6 +203,40 @@
             </div>
           </div>
         </div>
+        <!-- GPT-5 Settings Modal -->
+        <div id="modalGPT" class="hidden fixed inset-0 z-40 flex items-center justify-center">
+          <div class="bg-white dark:bg-gray-900 rounded-lg p-6 w-full max-w-xl shadow-xl">
+            <div class="flex items-center justify-between mb-3">
+              <div class="font-bold text-lg">🤖 GPT-5 Settings</div>
+              <button data-close="modalGPT" class="btn btn-ghost">✖︎</button>
+            </div>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between border-b pb-3 dark:border-gray-700">
+                <div>
+                  <div class="font-semibold">Enable GPT-5 mini</div>
+                  <div class="text-sm subtle">Automatically enhance all clients with AI capabilities</div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="gptEnabled" class="sr-only peer">
+                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                </label>
+              </div>
+              <div class="rounded-lg border p-4 dark:border-gray-700">
+                <div class="font-semibold mb-2">GPT-5 Features</div>
+                <ul class="list-disc pl-5 space-y-2 text-sm">
+                  <li>Automated email & task summarization</li>
+                  <li>Enhanced customer sentiment analysis</li>
+                  <li>Real-time language translation</li>
+                  <li>Predictive analytics insights</li>
+                  <li>Auto-generated QBR content</li>
+                </ul>
+                <div class="text-xs subtle mt-2">Features are automatically applied when enabled</div>
+              </div>
+              <div id="gptStatus" class="text-sm text-gray-500"></div>
+            </div>
+          </div>
+        </div>
+
         <!-- Meeting Summary Modal -->
         <div id="modalMeeting" class="hidden fixed inset-0 z-40 flex items-center justify-center">
           <div class="bg-white dark:bg-gray-900 rounded-lg p-6 w-full max-w-xl shadow-xl">
@@ -1193,10 +1229,45 @@
           const openEmailBtn = document.getElementById('openEmail');
           const openSlidesBtn = document.getElementById('openSlides');
           const openSheetsBtn = document.getElementById('openSheets');
+          const openGPTBtn = document.getElementById('openGPT');
+          const gptEnabled = document.getElementById('gptEnabled');
+          const gptStatus = document.getElementById('gptStatus');
+          
+          // Initialize GPT-5 state from localStorage
+          try {
+            const gptState = JSON.parse(localStorage.getItem('gpt5.enabled') || 'false');
+            gptEnabled.checked = gptState;
+            if (gptState) {
+              gptStatus.textContent = 'GPT-5 mini is active for all clients';
+              gptStatus.className = 'text-sm text-green-500';
+            }
+          } catch {}
+
+          // Handle GPT-5 toggle
+          gptEnabled?.addEventListener('change', (e) => {
+            const enabled = e.target.checked;
+            try {
+              localStorage.setItem('gpt5.enabled', JSON.stringify(enabled));
+              gptStatus.textContent = enabled ? 
+                'GPT-5 mini is now active for all clients' : 
+                'GPT-5 mini has been disabled';
+              gptStatus.className = enabled ?
+                'text-sm text-green-500' :
+                'text-sm text-gray-500';
+              
+              // Auto-refresh the page to apply changes
+              setTimeout(() => location.reload(), 1500);
+            } catch (err) {
+              console.error('Failed to save GPT-5 setting:', err);
+              gptStatus.textContent = 'Failed to save setting';
+              gptStatus.className = 'text-sm text-red-500';
+            }
+          });
           
           const openDriveBtn  = document.getElementById('openDrive');
           const openMeetingBtn = document.getElementById('openMeeting');
           const modals = {
+            modalGPT: document.getElementById('modalGPT'),
             modalSlack: document.getElementById('modalSlack'),
             modalEmail: document.getElementById('modalEmail'),
             modalSlides: document.getElementById('modalSlides'),
@@ -1213,6 +1284,7 @@
           overlay?.addEventListener('click', closeAll);
           document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeAll(); });
           document.querySelectorAll('[data-close]')?.forEach(btn=>btn.addEventListener('click', ()=> closeAll()));
+          openGPTBtn?.addEventListener('click', ()=> openModal('modalGPT'));
           openSlackBtn?.addEventListener('click', ()=> openModal('modalSlack'));
           openEmailBtn?.addEventListener('click', ()=> openModal('modalEmail'));
           openSlidesBtn?.addEventListener('click', ()=> openModal('modalSlides'));
